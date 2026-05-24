@@ -30,6 +30,7 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
   Map<String, int> _viewCounts = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
+  String _selectedStatusFilter = "all";
 
   @override
   void initState() {
@@ -94,13 +95,18 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
     final appProvider = Provider.of<AppProvider>(context);
     final l10n = AppLocalizations.of(context);
     final company = Provider.of<CompanyProvider>(context).company;
-    final bool limitReached = _properties.length >= company.totalAllowedProperties;
+    final activePropertiesCount = _properties.where((p) => p.status != 'Vendido' && p.status != 'Alquilado').length;
+    final bool limitReached = activePropertiesCount >= company.totalAllowedProperties;
 
     final filteredProperties = _properties.where((p) {
       final query = _searchQuery.toLowerCase();
       final title = p.title.toLowerCase();
       final ref = p.refNumber?.toString().padLeft(3, '0').toLowerCase() ?? "";
-      return title.contains(query) || ref.contains(query);
+      
+      final matchesSearch = title.contains(query) || ref.contains(query);
+      final matchesStatus = _selectedStatusFilter == 'all' || p.status == _selectedStatusFilter;
+      
+      return matchesSearch && matchesStatus;
     }).toList();
 
     return Scaffold(
@@ -120,7 +126,7 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
                   border: Border.all(color: limitReached ? Colors.orange : Colors.transparent),
                 ),
                 child: Text(
-                  '${_properties.length} / ${company.totalAllowedProperties}',
+                  '$activePropertiesCount / ${company.totalAllowedProperties}',
                   style: TextStyle(
                     color: limitReached ? Colors.orange.shade900 : Colors.white,
                     fontWeight: FontWeight.bold,
@@ -149,6 +155,19 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
                   fillColor: Theme.of(context).cardColor,
                 ),
                 onChanged: (value) => setState(() => _searchQuery = value),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                children: [
+                  _buildFilterChip('all', l10n.get('filter_all')),
+                  _buildFilterChip('Disponible', l10n.get('Disponible')),
+                  _buildFilterChip('Reservado', l10n.get('Reservado')),
+                  _buildFilterChip('Vendido', l10n.get('Vendido')),
+                  _buildFilterChip('Alquilado', l10n.get('Alquilado')),
+                ],
               ),
             ),
             _isLoading
@@ -295,6 +314,31 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
             ).then((_) => _loadProperties()),
         backgroundColor: limitReached ? Colors.grey : company.primaryColor,
         child: Icon(limitReached ? Icons.lock : Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String value, String label) {
+    final company = Provider.of<CompanyProvider>(context, listen: false).company;
+    final isSelected = _selectedStatusFilter == value;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        selectedColor: company.primaryColor,
+        checkmarkColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        onSelected: (selected) {
+          if (selected) {
+            setState(() {
+              _selectedStatusFilter = value;
+            });
+          }
+        },
       ),
     );
   }

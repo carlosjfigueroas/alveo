@@ -125,9 +125,12 @@ Este documento contiene las reglas maestras que rigen el desarrollo y la experie
 ## Regla #18: Límites de Inventario y Contenido (SaaS Quotas)
 **Definición**: Para mantener la salud del entorno SaaS, existen límites predefinidos de almacenamiento y registros por agencia.
 **Implicaciones**:
-*   **Límites por Defecto**: Cada agencia inicia con una capacidad máxima de **30 inmuebles activos** y 10 fotos por cada inmueble.
+*   **Límites por Defecto**: Cada agencia inicia con una capacidad máxima de **35 inmuebles activos** y 10 fotos por cada inmueble.
+*   **Conteo de Inmuebles Activos**: Para no penalizar el éxito de la agencia y permitir la conservación de su historial comercial, los inmuebles con estatus **Vendido** (`Vendido`) y **Alquilado** (`Alquilado`) quedan completamente excluidos del conteo del límite de inventario. Únicamente los inmuebles con estatus **Disponible** y **Reservado** consumen cupos activos. El indicador de la interfaz refleja de forma transparente `Inmuebles Activos / Límite` (ej: `3 / 35`).
 *   **Incentivos de Crecimiento**: Estos límites son dinámicos y pueden expandirse automáticamente mediante el sistema de referidos ("Invita a un amigo").
 *   **Gestión del Super Usuario**: El Super Admin tiene la autoridad exclusiva para modificar estos límites manualmente para agencias específicas o casos especiales desde el Super Panel.
+*   **Filtros de Estado de Inventario**: El Panel de Administración de Inmuebles cuenta con una fila de botones de selección (ChoiceChips) interactivos que permiten filtrar instantáneamente la lista por estatus: **Todos**, **Disponible**, **Reservado**, **Vendido** y **Alquilado**. Esta funcionalidad está completamente internacionalizada (i18n), traduciendo automáticamente los estatus según el idioma configurado (Español / Inglés).
+*   **Tarjetas Públicas con Badges de Estatus**: Las tarjetas de inmuebles en la página principal pública (`PropertyCard`) preservan sus proporciones y tamaños de diseño originales intactos. Sobrepuesto elegantemente en la esquina superior izquierda de la imagen se añade un badge de estatus semitransparente con soporte i18n (ej. **Vendido / Sold**, **Alquilado / Rented**, etc.). Para inmuebles no disponibles (vendidos o alquilados), el botón *"Me Interesa"* se deshabilita automáticamente y muestra la etiqueta *"No Disponible / Not Available"*, optimizando el embudo de captación de leads.
 
 ## Regla #19: Construcción de Enlaces Multi-Tenant (SaaS URLs)
 **Definición**: Todos los enlaces públicos o vistas previas de URL generados en la interfaz deben reflejar la arquitectura multi-tenant (subdominios por agencia) y ofrecer una UX clara para campos dinámicos.
@@ -344,3 +347,7 @@ El término "Ecosistema" queda oficialmente sustituido por "**Entorno**" en toda
 
 ### Regla #69: Ubicación del ejecutable de Flutter
 Para tareas de compilación y ejecución de scripts locales desde el agente, el ejecutable de Flutter está ubicado en la ruta estricta `C:\src\flutter`. Los comandos deben ejecutarse apuntando a `C:\src\flutter\bin\flutter.bat`.
+
+### Regla #70: Integración de Redes Sociales (LinkedIn)
+La plataforma soporta LinkedIn de forma unificada. La columna `linkedin_url` (nullable TEXT) mapeada en el modelo `Company` debe exponerse y persistirse en Supabase mediante el método `updateCompany`. Las interfaces de visualización pública (encabezado global, footer principal y drawer de navegación) deben renderizar dinámicamente el icono oficial de LinkedIn (`FontAwesomeIcons.linkedin`) condicionado a la existencia y validez de la URL configurada por el usuario.
+

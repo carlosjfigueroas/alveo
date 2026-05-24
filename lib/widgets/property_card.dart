@@ -249,7 +249,39 @@ class _PropertyCardState extends State<PropertyCard> {
                         }).toList(),
                       ),
                     ),
-                  // Favorite/Save Indicator moved to bottom row
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: widget.property.status == 'Vendido'
+                            ? const Color(0xFFE53935).withOpacity(0.9)
+                            : widget.property.status == 'Alquilado'
+                                ? const Color(0xFF1E88E5).withOpacity(0.9)
+                                : widget.property.status == 'Reservado'
+                                    ? const Color(0xFFFB8C00).withOpacity(0.9)
+                                    : const Color(0xFF43A047).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        (l10n.get(widget.property.status) ?? widget.property.status).toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               );
             }
@@ -540,28 +572,36 @@ class _PropertyCardState extends State<PropertyCard> {
                       width: 140, // Ancho reducido
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppThemes.terracottaRed,
-                          foregroundColor: Colors.white,
+                          backgroundColor: (widget.property.status == 'Vendido' || widget.property.status == 'Alquilado')
+                            ? (isDark ? Colors.white12 : Colors.grey[300])
+                            : AppThemes.terracottaRed,
+                          foregroundColor: (widget.property.status == 'Vendido' || widget.property.status == 'Alquilado')
+                            ? (isDark ? Colors.white38 : Colors.black38)
+                            : Colors.white,
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                              clipBehavior: Clip.antiAlias,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 600, maxHeight: 800),
-                                child: BudgetScreen(selectedPropertyId: widget.property.id),
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: (widget.property.status == 'Vendido' || widget.property.status == 'Alquilado')
+                          ? null
+                          : () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 600, maxHeight: 800),
+                                    child: BudgetScreen(selectedPropertyId: widget.property.id),
+                                  ),
+                                ),
+                              );
+                            },
                         child: Text(
-                          l10n.get('me_interesa'),
+                          (widget.property.status == 'Vendido' || widget.property.status == 'Alquilado')
+                            ? (isSpanish ? 'No Disponible' : 'Not Available')
+                            : l10n.get('me_interesa'),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),

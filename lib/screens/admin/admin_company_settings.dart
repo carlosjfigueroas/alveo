@@ -37,6 +37,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
   late TextEditingController _instagramController;
   late TextEditingController _facebookController;
   late TextEditingController _telegramController;
+  late TextEditingController _linkedinController;
   late TextEditingController _primaryColorController;
   late TextEditingController _secondaryColorController;
   late TextEditingController _defaultCommissionController;
@@ -101,6 +102,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
     _instagramController = TextEditingController(text: company.instagramUrl ?? '');
     _facebookController = TextEditingController(text: company.facebookUrl ?? '');
     _telegramController = TextEditingController(text: company.telegramUrl ?? '');
+    _linkedinController = TextEditingController(text: company.linkedinUrl ?? '');
     _primaryColorController = TextEditingController(text: company.primaryColorHex);
     _secondaryColorController = TextEditingController(text: company.secondaryColorHex);
     _logoUrl = company.logoUrl;
@@ -151,6 +153,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
     _instagramController.dispose();
     _facebookController.dispose();
     _telegramController.dispose();
+    _linkedinController.dispose();
     _primaryColorController.dispose();
     _secondaryColorController.dispose();
     _defaultCommissionController.dispose();
@@ -219,6 +222,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
         instagramUrl: _nullIfEmpty(_instagramController.text),
         facebookUrl: _nullIfEmpty(_facebookController.text),
         telegramUrl: _nullIfEmpty(_telegramController.text),
+        linkedinUrl: _nullIfEmpty(_linkedinController.text),
         primaryColorHex: _nullIfEmpty(_primaryColorController.text) ?? old.primaryColorHex,
         secondaryColorHex: _nullIfEmpty(_secondaryColorController.text) ?? old.secondaryColorHex,
         logoUrl: _logoUrl,
@@ -250,12 +254,8 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
         taxPercentage: double.tryParse(_taxPercentageController.text) ?? old.taxPercentage,
       );
 
-      debugPrint('[CompanySettings] Payload: name=${updated.name}, phone=${updated.contactPhone}, country=${updated.country}');
-      
       // 1. Guardar en BD
       await _service.updateCompany(updated);
-      
-      debugPrint('[CompanySettings] ✅ Guardado exitoso en BD');
       
       // 2. Recargar datos frescos desde BD para asegurar consistencia
       final freshRaw = await Supabase.instance.client
@@ -297,6 +297,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
         _instagramController.text = freshCompany.instagramUrl ?? '';
         _facebookController.text = freshCompany.facebookUrl ?? '';
         _telegramController.text = freshCompany.telegramUrl ?? '';
+        _linkedinController.text = freshCompany.linkedinUrl ?? '';
         _primaryColorController.text = freshCompany.primaryColorHex;
         _secondaryColorController.text = freshCompany.secondaryColorHex;
         _defaultCommissionController.text = freshCompany.defaultCommissionPct.toString();
@@ -384,6 +385,7 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
                     _buildTextField(_instagramController, l10n.get('instagram_label') ?? 'Instagram URL'),
                     _buildTextField(_facebookController, l10n.get('facebook_label') ?? 'Facebook URL'),
                     _buildTextField(_telegramController, l10n.get('telegram_label') ?? 'Telegram URL'),
+                    _buildTextField(_linkedinController, 'LinkedIn URL'),
                     const Divider(height: 48),
                     _buildSectionHeader(l10n.get('referral_affiliate_settings'), Icons.handshake_outlined),
                     const SizedBox(height: 16),

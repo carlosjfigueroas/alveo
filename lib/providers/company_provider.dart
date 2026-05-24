@@ -31,6 +31,7 @@ class CompanyProvider extends ChangeNotifier {
   String? get instagramUrl => _currentCompany.instagramUrl;
   String? get facebookUrl => _currentCompany.facebookUrl;
   String? get telegramUrl => _currentCompany.telegramUrl;
+  String? get linkedinUrl => _currentCompany.linkedinUrl;
   bool get isDemo => _currentCompany.isDemo;
   bool get isSuspended => _currentCompany.subscriptionStatus == 'suspended';
   

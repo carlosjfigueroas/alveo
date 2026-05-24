@@ -110,6 +110,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
     final igCtrl = TextEditingController(text: existing?.instagramUrl ?? '');
     final fbCtrl = TextEditingController(text: existing?.facebookUrl ?? '');
     final tgCtrl = TextEditingController(text: existing?.telegramUrl ?? '');
+    final lnCtrl = TextEditingController(text: existing?.linkedinUrl ?? '');
     bool isActive = existing?.isActive ?? true;
     bool isDemo = existing?.isDemo ?? false;
     bool showCarousel = existing?.showCarousel ?? true;
@@ -233,6 +234,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
                 _field(igCtrl, 'Instagram'),
                 _field(fbCtrl, 'Facebook'),
                 _field(tgCtrl, 'Telegram'),
+                _field(lnCtrl, 'LinkedIn'),
                 const Divider(height: 24),
                 // ── REGIONAL ──────────────────────────────────────
                 Padding(
@@ -471,6 +473,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
                     instagramUrl: igCtrl.text.trim().isEmpty ? null : igCtrl.text.trim(),
                     facebookUrl: fbCtrl.text.trim().isEmpty ? null : fbCtrl.text.trim(),
                     telegramUrl: tgCtrl.text.trim().isEmpty ? null : tgCtrl.text.trim(),
+                    linkedinUrl: lnCtrl.text.trim().isEmpty ? null : lnCtrl.text.trim(),
                     isDemo: isDemo,
                     isActive: isActive,
                     showCarousel: showCarousel,

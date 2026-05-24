@@ -987,46 +987,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    InkWell(
-                      onTap: () => _launchURL(
-                        companyProv.instagramUrl ?? 'https://instagram.com',
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: FaIcon(
-                          FontAwesomeIcons.instagram,
-                          color: Colors.white,
-                          size: 16,
+                    if ((companyProv.instagramUrl ?? '').isNotEmpty)
+                      InkWell(
+                        onTap: () => _launchURL(companyProv.instagramUrl!),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: FaIcon(
+                            FontAwesomeIcons.instagram,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
-                    ),
-                    InkWell(
-                      onTap: () => _launchURL(
-                        companyProv.facebookUrl ?? 'https://facebook.com',
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: FaIcon(
-                          FontAwesomeIcons.facebook,
-                          color: Colors.white,
-                          size: 16,
+                    if ((companyProv.facebookUrl ?? '').isNotEmpty)
+                      InkWell(
+                        onTap: () => _launchURL(companyProv.facebookUrl!),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: FaIcon(
+                            FontAwesomeIcons.facebook,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
-                    ),
-                    InkWell(
-                      onTap: () => _launchURL(
-                        companyProv.telegramUrl ?? 'https://telegram.org',
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: FaIcon(
-                          FontAwesomeIcons.telegram,
-                          color: Colors.white,
-                          size: 16,
+                    if ((companyProv.telegramUrl ?? '').isNotEmpty)
+                      InkWell(
+                        onTap: () => _launchURL(companyProv.telegramUrl!),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: FaIcon(
+                            FontAwesomeIcons.telegram,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
-                    ),
-                    if (companyProv.contactEmail != null)
+                    if ((companyProv.linkedinUrl ?? '').isNotEmpty)
+                      InkWell(
+                        onTap: () => _launchURL(companyProv.linkedinUrl!),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: FaIcon(
+                            FontAwesomeIcons.linkedin,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    if ((companyProv.contactEmail ?? '').isNotEmpty)
                       InkWell(
                         onTap: () => _showContactDialog(context),
                         child: const Padding(
@@ -1038,19 +1047,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                    InkWell(
-                      onTap: () => _launchURL(
-                        'https://wa.me/${companyProv.contactWhatsapp ?? ""}',
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: FaIcon(
-                          FontAwesomeIcons.whatsapp,
-                          color: Colors.white,
-                          size: 16,
+                    if (((companyProv.contactWhatsapp ?? '')).isNotEmpty)
+                      InkWell(
+                        onTap: () => _launchURL('https://wa.me/${companyProv.contactWhatsapp!}'),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: FaIcon(
+                            FontAwesomeIcons.whatsapp,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 if (isDesktop) ...[

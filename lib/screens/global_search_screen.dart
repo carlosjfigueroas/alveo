@@ -256,6 +256,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   InkWell(onTap: () => _launchURL(company.instagramUrl ?? 'https://instagram.com'), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: FaIcon(FontAwesomeIcons.instagram, color: Colors.white, size: 18))),
                   InkWell(onTap: () => _launchURL(company.facebookUrl ?? 'https://facebook.com'), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: FaIcon(FontAwesomeIcons.facebook, color: Colors.white, size: 18))),
                   InkWell(onTap: () => _launchURL(company.telegramUrl ?? 'https://telegram.org'), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: FaIcon(FontAwesomeIcons.telegram, color: Colors.white, size: 18))),
+                  if (company.linkedinUrl != null && company.linkedinUrl!.isNotEmpty)
+                    InkWell(onTap: () => _launchURL(company.linkedinUrl!), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: FaIcon(FontAwesomeIcons.linkedin, color: Colors.white, size: 18))),
                   if (company.contactEmail != null)
                     InkWell(onTap: () => _showContactDialog(), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: Icon(Icons.email, color: Colors.white, size: 20))),
                   InkWell(onTap: () => _launchURL('https://wa.me/${company.contactWhatsapp ?? ""}'), child: const Padding(padding: EdgeInsets.symmetric(horizontal: 3), child: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 18))),

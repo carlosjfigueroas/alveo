@@ -172,6 +172,8 @@ class MainDrawer extends StatelessWidget {
                       IconButton(onPressed: () => _launchURL(companyProv.instagramUrl ?? 'https://instagram.com'), icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.grey, size: 20)),
                       IconButton(onPressed: () => _launchURL(companyProv.facebookUrl ?? 'https://facebook.com'), icon: const FaIcon(FontAwesomeIcons.facebook, color: Colors.grey, size: 20)),
                       IconButton(onPressed: () => _launchURL(companyProv.telegramUrl ?? 'https://telegram.org'), icon: const FaIcon(FontAwesomeIcons.telegram, color: Colors.grey, size: 20)),
+                      if (companyProv.linkedinUrl != null && companyProv.linkedinUrl!.isNotEmpty)
+                        IconButton(onPressed: () => _launchURL(companyProv.linkedinUrl!), icon: const FaIcon(FontAwesomeIcons.linkedin, color: Colors.grey, size: 20)),
                       if (companyProv.contactEmail != null)
                         IconButton(onPressed: () => _launchURL('mailto:${companyProv.contactEmail}'), icon: const Icon(Icons.email_outlined, color: Colors.grey, size: 22)),
                       IconButton(onPressed: () => _launchURL('https://wa.me/${companyProv.contactWhatsapp ?? ""}'), icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.grey, size: 20)),
