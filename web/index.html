@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Catálogo interactivo de alquiler y venta de locales comerciales, oficinas y almacenes.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Inmobiliaria CCCPR">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+
+  <title>Inmuebles Comerciales</title>
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Inmuebles Comerciales">
+  <meta property="og:description" content="Catálogo interactivo de alquiler y venta de locales comerciales, oficinas y almacenes en la mejor ubicación.">
+  <!-- IMPORTANTE: WhatsApp requiere una URL absoluta para la imagen. Reemplaza "TU_DOMINIO.com" con la dirección real de la web -->
+  <meta property="og:image" content="https://TU_DOMINIO.com/icons/Icon-512.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Inmuebles Comerciales">
+  <meta property="twitter:description" content="Catálogo interactivo de alquiler y venta de locales comerciales, oficinas y almacenes.">
+  <meta property="twitter:image" content="https://TU_DOMINIO.com/icons/Icon-512.png">
+  <link rel="manifest" href="manifest.json">
+  <script>
+    const BUILD_VERSION = '2026-05-21-09:36'; // Panama removal + PWA update banner
+    
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceClear = urlParams.get('clear_cache') === '1';
+      const lastVersion = localStorage.getItem('alveo_build_version');
+
+      if (forceClear || lastVersion !== BUILD_VERSION) {
+        console.log("Alveo Integrity: New version or forced clear detected. Purging cache...");
+        
+        // 1. Clear LocalStorage (except version)
+        localStorage.clear();
+        localStorage.setItem('alveo_build_version', BUILD_VERSION);
+        
+        // 2. Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+              registration.unregister();
+              console.log("Service Worker purged.");
+            }
+          });
+        }
+        
+        // 3. Clear Cache Storage
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) caches.delete(name);
+          });
+        }
+
+        // 4. Force reload to get the new version
+        if (lastVersion !== BUILD_VERSION && !forceClear) {
+          window.location.reload(true);
+        }
+      }
+    })();
+  </script>
+
+  <script>
+    // ── PWA Update Banner: detect new Service Worker waiting ──────────────
+    // When a new SW is installed and waiting to take control, dispatch a
+    // custom event so Flutter can show the "Nueva versión disponible" banner.
+    (function() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.ready.then(function(registration) {
+        registration.addEventListener('updatefound', function() {
+          var newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function() {
+            // New SW installed & waiting; old SW still controlling the page
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[Alveo] Nueva versión del SW detectada. Mostrando banner.');
+              window.dispatchEvent(new CustomEvent('alveo_update_ready'));
+            }
+          });
+        });
+
+        // Also check if there's already a waiting worker (e.g. on tab focus)
+        if (registration.waiting && navigator.serviceWorker.controller) {
+          console.log('[Alveo] SW en espera detectado al cargar. Mostrando banner.');
+          window.dispatchEvent(new CustomEvent('alveo_update_ready'));
+        }
+      });
+    })();
+  </script>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

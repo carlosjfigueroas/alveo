@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "cccpr-app"
+  },
+  "targets": {
+    "cccpr-app": {
+      "hosting": {
+        "core": [
+          "alveo-demo"
+        ]
+      }
+    }
+  }
+}
