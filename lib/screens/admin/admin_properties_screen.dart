@@ -145,29 +145,52 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
             SubscriptionBanner(company: company),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: TextFormField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l10n.get('search'),
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: 400,
+                  child: TextFormField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: l10n.get('search'),
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                  ),
                 ),
-                onChanged: (value) => setState(() => _searchQuery = value),
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Row(
-                children: [
-                  _buildFilterChip('all', l10n.get('filter_all')),
-                  _buildFilterChip('Disponible', l10n.get('Disponible')),
-                  _buildFilterChip('Reservado', l10n.get('Reservado')),
-                  _buildFilterChip('Vendido', l10n.get('Vendido')),
-                  _buildFilterChip('Alquilado', l10n.get('Alquilado')),
-                ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: 400,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip('all', l10n.get('filter_all')),
+                        _buildFilterChip('Disponible', l10n.get('Disponible')),
+                        _buildFilterChip('Reservado', l10n.get('Reservado')),
+                        _buildFilterChip('Vendido', l10n.get('Vendido')),
+                        _buildFilterChip('Alquilado', l10n.get('Alquilado')),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
             _isLoading
