@@ -147,7 +147,7 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
               padding: const EdgeInsets.all(12.0),
               child: Center(
                 child: SizedBox(
-                  width: 480,
+                  width: 600,
                   child: TextFormField(
                     controller: _searchController,
                     decoration: InputDecoration(
@@ -164,7 +164,7 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
             ),
             Center(
               child: SizedBox(
-                width: 480,
+                width: 600,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
