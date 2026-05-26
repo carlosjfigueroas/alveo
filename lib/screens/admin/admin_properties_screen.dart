@@ -165,10 +165,10 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
             Center(
               child: SizedBox(
                 width: 600,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildFilterChip('all', l10n.get('filter_all')),
                       _buildFilterChip('Disponible', l10n.get('Disponible')),
