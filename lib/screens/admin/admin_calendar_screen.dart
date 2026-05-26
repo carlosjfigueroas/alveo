@@ -126,6 +126,7 @@ class _AdminCalendarScreenState extends State<AdminCalendarScreen> {
     final isNew = appointment == null;
     final l10n = AppLocalizations.of(context);
 
+    String? selectedLeadId;
     final nameController = TextEditingController(text: appointment?['client_name']);
     final phoneController = TextEditingController(text: appointment?['phone']);
     DateTime dialogDate = _selectedDay ?? DateTime.now();
@@ -171,6 +172,34 @@ class _AdminCalendarScreenState extends State<AdminCalendarScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (isNew) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showLeadsSelectionDialog(
+                              companyId,
+                              setDialogState,
+                              nameController,
+                              phoneController,
+                              refController,
+                              (propertyId) {
+                                selectedPropertyId = propertyId;
+                              },
+                              (leadId) {
+                                selectedLeadId = leadId;
+                              },
+                            ),
+                            icon: const Icon(Icons.link, size: 18),
+                            label: Text(l10n.get('agenda_link_lead')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.purple.shade700,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size.fromHeight(40),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ],
                       TextFormField(
                         controller: nameController,
                         decoration: InputDecoration(
@@ -370,10 +399,11 @@ class _AdminCalendarScreenState extends State<AdminCalendarScreen> {
                           'agent_id': selectedAgentId,
                         };
                         
-                        if (isNew) {
+                        if (isNew && selectedLeadId == null) {
                           await _service.createAppointment(data, companyId).timeout(const Duration(seconds: 15));
                         } else {
-                          await _service.updateAppointment(appointment['id'], data).timeout(const Duration(seconds: 15));
+                          final targetId = isNew ? selectedLeadId! : appointment['id'];
+                          await _service.updateAppointment(targetId, data).timeout(const Duration(seconds: 15));
                         }
                         
                         if (mounted) {
@@ -391,6 +421,134 @@ class _AdminCalendarScreenState extends State<AdminCalendarScreen> {
                     }
                   },
                   child: Text(l10n.get('save')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showLeadsSelectionDialog(
+    String companyId,
+    StateSetter parentSetState,
+    TextEditingController nameController,
+    TextEditingController phoneController,
+    TextEditingController refController,
+    void Function(String?) onPropertySelected,
+    void Function(String?) onLeadSelected,
+  ) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final l10n = AppLocalizations.of(context);
+            return AlertDialog(
+              title: Text(l10n.get('agenda_select_lead')),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _service.getBudgetRequests(companyId),
+                  builder: (futureCtx, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return Text('${l10n.get("error_generic")}${snapshot.error}');
+                    }
+                    final allLeads = snapshot.data ?? [];
+                    final filteredLeads = allLeads.where((lead) {
+                      final isPending = lead['status'] == 'pending';
+                      final isNotApp = lead['is_appointment'] != true;
+                      if (!isPending || !isNotApp) return false;
+
+                      final name = (lead['client_name'] ?? '').toString().toLowerCase();
+                      final phone = (lead['phone'] ?? '').toString().toLowerCase();
+                      final notes = (lead['notes'] ?? '').toString().toLowerCase();
+                      final q = searchQuery.toLowerCase();
+
+                      return name.contains(q) || phone.contains(q) || notes.contains(q);
+                    }).toList();
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: l10n.get('search') ?? 'Buscar',
+                            prefixIcon: const Icon(Icons.search),
+                            border: const OutlineInputBorder(),
+                          ),
+                          onChanged: (val) {
+                            setDialogState(() {
+                              searchQuery = val;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        if (filteredLeads.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24.0),
+                            child: Text(l10n.get('agenda_no_pending_leads')),
+                          )
+                        else
+                          Flexible(
+                            child: SizedBox(
+                              height: 300,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: filteredLeads.length,
+                                itemBuilder: (listCtx, index) {
+                                  final lead = filteredLeads[index];
+                                  final name = lead['client_name'] ?? '';
+                                  final phone = lead['phone'] ?? '';
+                                  final dateStr = lead['sent_at'] != null 
+                                    ? lead['sent_at'].toString().substring(0, 10) 
+                                    : '';
+                                  final rawPropList = lead['property_list'];
+                                  final propertyList = rawPropList is List ? rawPropList : null;
+                                  final propId = (propertyList != null && propertyList.isNotEmpty) ? propertyList.first.toString() : null;
+                                  final propRef = propId != null ? _propertyRefs[propId] ?? '' : '';
+
+                                  return Card(
+                                    margin: const EdgeInsets.symmetric(vertical: 4),
+                                    child: ListTile(
+                                      title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      subtitle: Text('${phone.isNotEmpty ? "$phone\n" : ""}${l10n.get("leads_date")}: $dateStr${propRef.isNotEmpty ? "\nRef: $propRef" : ""}'),
+                                      isThreeLine: true,
+                                      onTap: () {
+                                        parentSetState(() {
+                                          nameController.text = name;
+                                          phoneController.text = phone;
+                                          if (propId != null) {
+                                            onPropertySelected(propId);
+                                            refController.text = propRef;
+                                          }
+                                          onLeadSelected(lead['id']);
+                                        });
+                                        Navigator.pop(dialogContext);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.get('cancel')),
                 ),
               ],
             );

@@ -256,6 +256,7 @@ class SupabaseService {
       'company_id': companyId,
       'is_appointment': false,
       'assigned_agent_id': data['assigned_agent_id'],
+      'source': 'web',
     });
 
     try {
@@ -265,13 +266,13 @@ class SupabaseService {
     }
   }
 
-  /// Obtiene solicitudes de una empresa.
+  /// Obtiene solicitudes de una empresa (excluyendo citas directas de la agenda).
   Future<List<Map<String, dynamic>>> getBudgetRequests(String companyId, {String? agentId}) async {
     var query = client
         .from('budget_requests')
         .select()
         .eq('company_id', companyId)
-        .eq('is_appointment', false);
+        .neq('client_email', 'agenda@local');
         
     if (agentId != null) {
       query = query.eq('assigned_agent_id', agentId);
@@ -281,12 +282,12 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  /// Obtiene TODAS las solicitudes (Super Admin).
+  /// Obtiene TODAS las solicitudes (Super Admin, excluyendo citas directas de la agenda).
   Future<List<Map<String, dynamic>>> getAllBudgetRequestsGlobal() async {
     final response = await client
         .from('budget_requests')
         .select()
-        .eq('is_appointment', false)
+        .neq('client_email', 'agenda@local')
         .order('sent_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
   }
@@ -346,6 +347,7 @@ class SupabaseService {
       'status': 'pending', // Campo requerido de leads
       'client_email': 'agenda@local', // Constraint de la tabla budget_requests
       'assigned_agent_id': data['agent_id'],
+      'source': 'manual',
     });
   }
 
@@ -358,6 +360,8 @@ class SupabaseService {
       'appointment_time': data['time'],
       'appointment_status': data['status'],
       'assigned_agent_id': data['agent_id'],
+      'is_appointment': true,
+      'status': 'responded', // Leads general status updated to Responded/Respondida
     }).eq('id', id);
   }
 
@@ -820,6 +824,8 @@ class SupabaseService {
       'city': company.city,
       'show_referral_menu': company.showReferralMenu,
       'show_organic_affiliate': company.showOrganicAffiliate,
+      'has_ai_agent': company.hasAiAgent,
+      'ai_model': company.aiModel,
       'acquisition_channel': company.acquisitionChannel,
       'referred_by_salesperson': company.referredBySalesperson,
       'referral_email_entered': company.referralEmailEntered,

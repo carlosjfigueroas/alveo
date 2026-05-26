@@ -33,6 +33,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   DateTime? _startDate;
   DateTime? _endDate;
   int _referralCount = 0;
+  Map<String, int> _leadSourceStats = {};
 
   @override
   void initState() {
@@ -106,12 +107,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
       final refCount = await _service.getReferralCount(companyId);
 
+      // Load lead source distribution (Regla #92 — source discrimination)
+      final leadsRaw = await _service.getBudgetRequests(companyId, agentId: agentId);
+      final sourceMap = <String, int>{'ava': 0, 'web': 0, 'manual': 0};
+      for (final lead in leadsRaw) {
+        final src = (lead['source'] as String?) ?? 'web';
+        sourceMap[src] = (sourceMap[src] ?? 0) + 1;
+      }
+
       if (mounted) {
         setState(() {
           _stats = stats;
           _topLikedList = topMapped;
           _topViewedList = topViewedMapped;
           _referralCount = refCount;
+          _leadSourceStats = sourceMap;
         });
       }
     } finally {
@@ -277,7 +287,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ],
                     ),
                     const SizedBox(height: 32),
-                    
+
+                    // --- Lead Source Distribution ---
+                    if (_leadSourceStats.values.any((v) => v > 0)) ...[
+                      _sectionHeader(
+                        isSpanish ? 'Origen de Leads' : 'Lead Sources',
+                        Icons.campaign_outlined,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildLeadSourceCard(context, isMobile, isDark),
+                      const SizedBox(height: 32),
+                    ],
+
                     // --- Financial Summary Sector ---
                     _sectionHeader(l10n.get('commissions'), Icons.account_balance_wallet),
                     const SizedBox(height: 12),
@@ -460,6 +481,131 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
               ),
             ),
+      ),
+    );
+  }
+
+  Widget _buildLeadSourceCard(BuildContext context, bool isMobile, bool isDark) {
+    final l10n = AppLocalizations.of(context);
+    final total = _leadSourceStats.values.fold(0, (a, b) => a + b);
+
+    final sources = [
+      (
+        key: 'ava',
+        label: l10n.get('source_ava'),
+        icon: Icons.auto_awesome,
+        color: const Color(0xFF7C3AED),
+      ),
+      (
+        key: 'web',
+        label: l10n.get('source_web'),
+        icon: Icons.language,
+        color: const Color(0xFF059669),
+      ),
+      (
+        key: 'manual',
+        label: l10n.get('source_manual'),
+        icon: Icons.calendar_today,
+        color: const Color(0xFF0369A1),
+      ),
+    ];
+
+    return Container(
+      width: isMobile ? double.infinity : 420,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.campaign_outlined, color: Color(0xFF7C3AED)),
+              const SizedBox(width: 8),
+              Text(
+                l10n.get('leads_count'),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF003366),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Total: $total',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF7C3AED),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          ...sources.map((s) {
+            final count = _leadSourceStats[s.key] ?? 0;
+            final pct = total > 0 ? count / total : 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 18.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: s.color.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(s.icon, size: 14, color: s.color),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        s.label,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$count (${(pct * 100).toStringAsFixed(0)}%)',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: pct,
+                      minHeight: 8,
+                      backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(s.color),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

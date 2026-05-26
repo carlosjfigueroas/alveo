@@ -14,23 +14,26 @@ class AdminLocationsScreen extends StatefulWidget {
   State<AdminLocationsScreen> createState() => _AdminLocationsScreenState();
 }
 
-class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
+class _AdminLocationsScreenState extends State<AdminLocationsScreen> with SingleTickerProviderStateMixin {
   // We keep a local mutable copy of the JSON structure
   late Map<String, Map<String, List<String>>> _editableData;
   String? _selectedCountry;
   String? _selectedState;
   bool _isSaving = false;
   final ScrollController _scrollController = ScrollController();
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _cloneData();
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -257,6 +260,7 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 800;
     final minWidthPerColumn = 350.0;
     final totalMinWidth = minWidthPerColumn * 3;
 
@@ -266,6 +270,20 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
         title: Text(l10n.get('locations_manager')),
         backgroundColor: isDark ? const Color(0xFF001A0D) : AppThemes.primaryGreen,
         foregroundColor: Colors.white,
+        bottom: isMobile
+            ? TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white,
+                indicatorWeight: 3.0,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                tabs: [
+                  Tab(text: l10n.get('country_field')),
+                  Tab(text: l10n.get('state_field')),
+                  Tab(text: l10n.get('city_field')),
+                ],
+              )
+            : null,
         actions: [
           if (_isSaving)
             const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(color: AppThemes.primaryGreen, strokeWidth: 2)))
@@ -277,91 +295,196 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
             ),
         ],
       ),
-      body: Scrollbar(
-        thumbVisibility: true,
-        controller: _scrollController,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          child: Container(
-            width: screenWidth > totalMinWidth ? screenWidth : totalMinWidth,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: isMobile
+          ? TabBarView(
+              controller: _tabController,
               children: [
-                // COLUMNA PAÍSES
-                Expanded(
-                  child: _buildColumn(
-                    title: l10n.get('country_field'),
-                    items: countries,
-                    selectedItem: _selectedCountry,
-                    onSelect: (val) => setState(() {
+                // COUNTRY COLUMN
+                _buildColumn(
+                  title: l10n.get('country_field'),
+                  items: countries,
+                  selectedItem: _selectedCountry,
+                  onSelect: (val) {
+                    setState(() {
                       _selectedCountry = val;
                       _selectedState = null;
-                    }),
-                    onAdd: isSuper ? _addCountry : null,
-                    onDelete: isSuper ? (val) {
-                      _checkAndDelete('country', val, l10n.get('sure_delete_country').replaceFirst('$val', val), () {
-                        setState(() {
-                          _editableData.remove(val);
-                          if (_selectedCountry == val) {
-                            _selectedCountry = null;
-                            _selectedState = null;
-                          }
-                        });
+                    });
+                    _tabController.animateTo(1); // Auto transition to States
+                  },
+                  onAdd: isSuper ? _addCountry : null,
+                  onDelete: isSuper ? (val) {
+                    _checkAndDelete('country', val, l10n.get('sure_delete_country').replaceFirst('$val', val), () {
+                      setState(() {
+                        _editableData.remove(val);
+                        if (_selectedCountry == val) {
+                          _selectedCountry = null;
+                          _selectedState = null;
+                        }
                       });
-                    } : null,
-                  ),
+                    });
+                  } : null,
                 ),
-                Container(width: 1, color: isDark ? Colors.white10 : Colors.black12),
-                
-                // COLUMNA ESTADOS
-                Expanded(
-                  child: _selectedCountry == null
-                      ? Center(child: Text(l10n.get('select_country'), style: TextStyle(color: isDark ? Colors.white24 : Colors.black26)))
-                      : _buildColumn(
-                          title: l10n.get('state_field'),
-                          items: states,
-                          selectedItem: _selectedState,
-                          onSelect: (val) => setState(() => _selectedState = val),
-                          onAdd: _addState,
+                // STATE COLUMN
+                _selectedCountry == null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.map, size: 64, color: isDark ? Colors.white24 : Colors.black26),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.get('select_country'),
+                                style: TextStyle(color: isDark ? Colors.white54 : Colors.black45, fontSize: 16, fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _buildColumn(
+                        title: l10n.get('state_field'),
+                        items: states,
+                        selectedItem: _selectedState,
+                        onSelect: (val) {
+                          setState(() {
+                            _selectedState = val;
+                          });
+                          _tabController.animateTo(2); // Auto transition to Cities
+                        },
+                        onAdd: _addState,
+                        onDelete: isSuper ? (val) {
+                          _checkAndDelete('state', val, l10n.get('sure_delete_state').replaceFirst('$val', val), () {
+                             setState(() {
+                              _editableData[_selectedCountry]!.remove(val);
+                              if (_selectedState == val) {
+                                _selectedState = null;
+                              }
+                            });
+                          });
+                        } : null,
+                      ),
+                // CITY COLUMN
+                _selectedState == null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.location_city, size: 64, color: isDark ? Colors.white24 : Colors.black26),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.get('select_state'),
+                                style: TextStyle(color: isDark ? Colors.white54 : Colors.black45, fontSize: 16, fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _buildColumn(
+                        title: l10n.get('city_field'),
+                        items: cities,
+                        selectedItem: null,
+                        onSelect: (val) {},
+                        onAdd: _addCity,
+                        onDelete: isSuper ? (val) {
+                          _checkAndDelete('city', val, l10n.get('sure_delete_city').replaceFirst('$val', val), () {
+                            setState(() {
+                              _editableData[_selectedCountry]![_selectedState]!.remove(val);
+                            });
+                          });
+                        } : null,
+                      ),
+              ],
+            )
+          : Scrollbar(
+              thumbVisibility: true,
+              controller: _scrollController,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  width: screenWidth > totalMinWidth ? screenWidth : totalMinWidth,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // COLUMNA PAÍSES
+                      Expanded(
+                        child: _buildColumn(
+                          title: l10n.get('country_field'),
+                          items: countries,
+                          selectedItem: _selectedCountry,
+                          onSelect: (val) => setState(() {
+                            _selectedCountry = val;
+                            _selectedState = null;
+                          }),
+                          onAdd: isSuper ? _addCountry : null,
                           onDelete: isSuper ? (val) {
-                            _checkAndDelete('state', val, l10n.get('sure_delete_state').replaceFirst('$val', val), () {
-                               setState(() {
-                                _editableData[_selectedCountry]!.remove(val);
-                                if (_selectedState == val) {
+                            _checkAndDelete('country', val, l10n.get('sure_delete_country').replaceFirst('$val', val), () {
+                              setState(() {
+                                _editableData.remove(val);
+                                if (_selectedCountry == val) {
+                                  _selectedCountry = null;
                                   _selectedState = null;
                                 }
                               });
                             });
                           } : null,
                         ),
+                      ),
+                      Container(width: 1, color: isDark ? Colors.white10 : Colors.black12),
+                      
+                      // COLUMNA ESTADOS
+                      Expanded(
+                        child: _selectedCountry == null
+                            ? Center(child: Text(l10n.get('select_country'), style: TextStyle(color: isDark ? Colors.white24 : Colors.black26)))
+                            : _buildColumn(
+                                title: l10n.get('state_field'),
+                                items: states,
+                                selectedItem: _selectedState,
+                                onSelect: (val) => setState(() => _selectedState = val),
+                                onAdd: _addState,
+                                onDelete: isSuper ? (val) {
+                                  _checkAndDelete('state', val, l10n.get('sure_delete_state').replaceFirst('$val', val), () {
+                                     setState(() {
+                                      _editableData[_selectedCountry]!.remove(val);
+                                      if (_selectedState == val) {
+                                        _selectedState = null;
+                                      }
+                                    });
+                                  });
+                                } : null,
+                              ),
+                      ),
+                      Container(width: 1, color: isDark ? Colors.white10 : Colors.black12),
+                      
+                      // COLUMNA CIUDADES
+                      Expanded(
+                        child: _selectedState == null
+                            ? Center(child: Text(l10n.get('select_state'), style: TextStyle(color: isDark ? Colors.white24 : Colors.black26)))
+                            : _buildColumn(
+                                title: l10n.get('city_field'),
+                                items: cities,
+                                selectedItem: null,
+                                onSelect: (val) {}, // nothing on select
+                                onAdd: _addCity,
+                                onDelete: isSuper ? (val) {
+                                  _checkAndDelete('city', val, l10n.get('sure_delete_city').replaceFirst('$val', val), () {
+                                    setState(() {
+                                      _editableData[_selectedCountry]![_selectedState]!.remove(val);
+                                    });
+                                  });
+                                } : null,
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
-                Container(width: 1, color: isDark ? Colors.white10 : Colors.black12),
-                
-                // COLUMNA CIUDADES
-                Expanded(
-                  child: _selectedState == null
-                      ? Center(child: Text(l10n.get('select_state'), style: TextStyle(color: isDark ? Colors.white24 : Colors.black26)))
-                      : _buildColumn(
-                          title: l10n.get('city_field'),
-                          items: cities,
-                          selectedItem: null,
-                          onSelect: (val) {}, // nothing on select
-                          onAdd: _addCity,
-                          onDelete: isSuper ? (val) {
-                            _checkAndDelete('city', val, l10n.get('sure_delete_city').replaceFirst('$val', val), () {
-                              setState(() {
-                                _editableData[_selectedCountry]![_selectedState]!.remove(val);
-                              });
-                            });
-                          } : null,
-                        ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

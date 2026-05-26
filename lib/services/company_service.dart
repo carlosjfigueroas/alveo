@@ -79,11 +79,14 @@ class CompanyService {
 
   static Future<Company> upsertCompany(Company company) async {
     final data = company.toJson();
-    if (company.id.isNotEmpty) data['id'] = company.id;
-    // Remove limits from payload if we want them to fall back to null, 
-    // but the object already has resolved limits. We just upsert what the object has.
     final globalLimits = await getGlobalLimits();
-    final res = await _client.from('companies').upsert(data).select().single();
+    dynamic res;
+    if (company.id.isNotEmpty) {
+      data['id'] = company.id;
+      res = await _client.from('companies').update(data).eq('id', company.id).select().single();
+    } else {
+      res = await _client.from('companies').insert(data).select().single();
+    }
     return Company.fromJson(res, globalLimits: globalLimits);
   }
 

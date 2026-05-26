@@ -116,6 +116,8 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
     bool showCarousel = existing?.showCarousel ?? true;
     bool showReferralMenu = existing?.showReferralMenu ?? true;
     bool showOrganicAffiliate = existing?.showOrganicAffiliate ?? true;
+    bool hasAiAgent = existing?.hasAiAgent ?? true;
+    String aiModel = existing?.aiModel ?? 'gemini-flash-latest';
     
     // Limits & Prices
     final basePriceCtrl = TextEditingController(
@@ -448,6 +450,30 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
                 SwitchListTile(title: Text(l10n.get('carousel_title')), value: showCarousel, onChanged: (v) => setDs(() => showCarousel = v)),
                 SwitchListTile(title: Text(l10n.get('show_referral_option')), value: showReferralMenu, onChanged: (v) => setDs(() => showReferralMenu = v)),
                 SwitchListTile(title: Text(l10n.get('show_organic_affiliate')), value: showOrganicAffiliate, onChanged: (v) => setDs(() => showOrganicAffiliate = v)),
+                SwitchListTile(title: Text(isSpanish ? 'Activar Agente IA (Ava)' : 'Enable AI Agent (Ava)'), value: hasAiAgent, onChanged: (v) => setDs(() => hasAiAgent = v)),
+                if (hasAiAgent) ...[
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: aiModel,
+                    decoration: InputDecoration(
+                      labelText: isSpanish ? 'Modelo del Agente IA' : 'AI Agent Model',
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'gemini-flash-latest',
+                        child: Text(isSpanish ? 'Gemini Flash (En Vivo)' : 'Gemini Flash (Live)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'mock-test',
+                        child: Text(isSpanish ? 'Simulador de Pruebas (Gratis)' : 'Test Simulator (Free)'),
+                      ),
+                    ],
+                    onChanged: (v) => setDs(() => aiModel = v!),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ]),
             ),
           ),
@@ -479,6 +505,8 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
                     showCarousel: showCarousel,
                     showReferralMenu: showReferralMenu,
                     showOrganicAffiliate: showOrganicAffiliate,
+                    hasAiAgent: hasAiAgent,
+                    aiModel: aiModel,
                     currencyCode: currencyCode,
                     currencySymbol: currencies.firstWhere((c) => c['code'] == currencyCode)['symbol']!,
                     areaUnit: areaUnit,
@@ -489,6 +517,34 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> with SingleTi
                     maxPhotosPerProperty: int.tryParse(maxPhotosCtrl.text.replaceAll(',', '')) ?? 10,
                     language: language,
                     billingCycle: billingCycle,
+                    // Preservar todas las propiedades existentes que no se editan en este formulario
+                    subscriptionStatus: existing?.subscriptionStatus ?? 'trial',
+                    trialEndsAt: existing?.trialEndsAt,
+                    subscriptionStartsAt: existing?.subscriptionStartsAt,
+                    subscriptionEndsAt: existing?.subscriptionEndsAt,
+                    referralDiscount: existing?.referralDiscount ?? 0.0,
+                    referralCode: existing?.referralCode,
+                    referredByCompanyId: existing?.referredByCompanyId,
+                    referralEmailEntered: existing?.referralEmailEntered,
+                    suspendedAt: existing?.suspendedAt,
+                    graceEndsAt: existing?.graceEndsAt,
+                    carouselStrategy: existing?.carouselStrategy ?? 'manual',
+                    carouselAnimation: existing?.carouselAnimation ?? 'slide',
+                    city: existing?.city,
+                    contactName: existing?.contactName,
+                    referralBonusPhotos: existing?.referralBonusPhotos ?? 0,
+                    referralBonusProperties: existing?.referralBonusProperties ?? 0,
+                    referredBySalesperson: existing?.referredBySalesperson,
+                    acquisitionChannel: existing?.acquisitionChannel ?? 'organic',
+                    defaultCommissionPct: existing?.defaultCommissionPct ?? 5.0,
+                    defaultManagementPct: existing?.defaultManagementPct ?? 10.0,
+                    defaultSaleCommissionPct: existing?.defaultSaleCommissionPct ?? 5.0,
+                    defaultAgencySplitPct: existing?.defaultAgencySplitPct ?? 50.0,
+                    defaultResidentialRentalMonths: existing?.defaultResidentialRentalMonths ?? 1.0,
+                    defaultCommercialRentalMonths: existing?.defaultCommercialRentalMonths ?? 1.0,
+                    defaultAdminCommissionPct: existing?.defaultAdminCommissionPct ?? 10.0,
+                    taxLabel: existing?.taxLabel ?? 'IVA',
+                    taxPercentage: existing?.taxPercentage ?? 16.0,
                   );
                   final saved = await CompanyService.upsertCompany(company);
                   // Subir logos con bytes reales (no blob URLs)

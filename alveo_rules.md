@@ -1,0 +1,608 @@
+# Alveo - Core Business Rules & Philosophy
+
+Este documento contiene las reglas maestras que rigen el desarrollo y la experiencia de usuario de la plataforma Alveo.
+
+## Regla #0: Naturaleza del Proyecto (SaaS PMS)
+**Definición**: Alveo es una aplicación SaaS (Software as a Service) de tipo PMS (Property Management System).
+**Implicaciones**:
+*   El objetivo no es solo publicar inmuebles, sino gestionar el flujo completo del negocio inmobiliario.
+*   Debe ser escalable, permitiendo múltiples empresas (agencias) con total aislamiento de datos.
+*   La robustez y la integridad de la información operativa (clientes, cierres, comisiones) son tan importantes como la estética visual.
+
+## Regla #1: Captación vía Redes Sociales
+**Definición**: La principal forma de captación de posibles clientes es a través de las redes sociales.
+**Implicaciones**:
+*   Cada inmueble debe ser "compartible" de forma atractiva.
+*   Las publicaciones en redes de la Agencia o de los Agentes deben incluir siempre un link hacia la App Web.
+*   La App Web debe estar optimizada para recibir tráfico móvil proveniente de redes sociales (carga rápida, botones de contacto claros, diseño responsivo).
+*   Se debe priorizar la generación de leads directos (WhatsApp/Email) desde los links compartidos.
+
+## Regla #2: Identidad de Marca (White-Label First)
+**Definición**: El software debe adaptarse a la identidad de la Agencia y del Agente, no al revés.
+**Implicaciones**:
+*   Priorizar la personalización de colores, logos y perfiles públicos.
+*   La experiencia del cliente final debe sentir que está en el portal oficial de la agencia o del agente.
+
+## Regla #3: Transparencia Colaborativa
+**Definición**: El inventario es un activo colectivo de la Agencia.
+**Implicaciones**:
+*   Todos los agentes pueden ver y ofrecer todos los inmuebles de la oficina.
+*   El sistema debe reconocer y proteger siempre al "Captador" del inmueble en la repartición de comisiones.
+
+## Regla #4: Privacidad Estructural (RLS)
+**Definición**: La seguridad de los datos es automática y no depende del programador.
+**Implicaciones**:
+*   Uso estricto de Row Level Security (RLS) en Supabase.
+*   Un agente solo accede a sus propios leads, cierres y datos sensibles por diseño de base de datos.
+
+## Regla #5: Estética Premium & Confianza
+**Definición**: El diseño es nuestra primera herramienta de venta.
+**Implicaciones**:
+*   Uso de temas modernos, modo oscuro pulido y tipografía profesional.
+*   Evitar formularios tediosos; la interfaz debe ser fluida y "limpia".
+
+## Regla #6: Velocidad de Respuesta (Speed-to-Lead)
+**Definición**: Reducir la fricción entre el interés y el contacto humano.
+**Implicaciones**:
+*   Botones de WhatsApp prominentes y pre-configurados.
+*   Notificaciones y asignación automática de leads para evitar que un cliente "se enfríe".
+
+## Regla #7: Multi-Tenancy vía Subdominios
+**Definición**: Cada agencia accede a su portal a través de un subdominio único en el dominio oficial `alveo.fyi` (ej: `agencia-uno.alveo.fyi`).
+**Implicaciones**:
+*   La App debe detectar automáticamente la empresa (company_id) basándose en el subdominio de la URL (ej: `www.tuhogar.alveo.fyi`).
+*   Esto facilita que los agentes compartan links que ya vienen pre-configurados para su agencia.
+*   Permite el aislamiento total de la experiencia de usuario desde el momento en que se carga la página.
+
+## Regla #8: Acceso Global & Modo Demo
+**Definición**: El punto de entrada principal es `www.demo.alveo.fyi`. Si un usuario entra en el dominio raíz (`www.alveo.fyi`), el sistema lo redirecciona automáticamente al modo Demo.
+**Implicaciones**:
+*   **Super Usuario**: Solo el Super Admin puede ver la consolidación de todos los inmuebles de todas las empresas desde este modo.
+*   **Super Panel**: Opción de menú exclusiva para el Super Admin para gestionar el entorno completo (agencias, suscripciones, configuraciones globales).
+*   **Modo Vitrina**: Para usuarios no logueados, el modo Demo sirve como catálogo global de ejemplo.
+
+## Regla #9: Auto-Registro (Instant Activation)
+**Definición**: Existe una página pública `/register` diseñada para la captación orgánica y rápida de nuevas agencias.
+**Implicaciones**:
+*   El flujo de registro es "Self-Service": al completar el formulario, **el sistema crea la empresa, el entorno y el usuario administrador de forma inmediata**.
+*   No existe paso intermedio de aprobación manual para el flujo público; el objetivo es que la agencia pueda empezar a trabajar al instante.
+*   **Opción Administrativa**: El Super Admin mantiene la capacidad de crear empresas manualmente desde el Super Panel para casos especiales o ventas directas fuera del flujo público.
+
+## Regla #10: Estrategias de Crecimiento (Referidos)
+**Definición**: El sistema soporta 3 estrategias principales para la captación de clientes:
+1.  **Estrategia #1 (Referidos)**: Captación vía red de contactos.
+    *   **Sub-Estrategia (Invita a un amigo)**: Recompensa directa al usuario que invita a otra agencia a unirse a Alveo.
+2.  **Estrategia #2 (Marketing Digital)**: Tráfico directo vía pauta y SEO.
+3.  **Estrategia #3 (Alianzas)**: Convenios con asociaciones inmobiliarias.
+**Implicaciones**:
+*   El sistema debe trackear el `acquisition_channel` de cada nueva agencia.
+*   Las recompensas (descuentos, bonos de inmuebles/fotos) se aplican automáticamente según la estrategia activa.
+
+## Regla #11: Gestión de Suscripciones (SaaS Health)
+**Definición**: El acceso a las funciones de PMS está ligado al estado de la suscripción.
+**Implicaciones**:
+*   Las empresas con suscripción `suspended` ven un bloqueo en su panel administrativo pero mantienen su inventario público (modo lectura) para no romper links de redes sociales.
+
+## Regla #12: Experiencia Bilingüe Nativa (i18n)
+**Definición**: Alveo nace como una plataforma internacional y escalable. i18n debe ser una prioridad en cada tarea.
+**Implicaciones**:
+*   **Prohibido el Hardcoding**: Ningún texto visible al usuario debe estar escrito directamente en el código. Debe usarse siempre `AppLocalizations`.
+*   **Mentalidad de Refactor**: En cada revisión o refactorización, se debe verificar y corregir cualquier texto que no esté internacionalizado.
+*   **Soporte Multilingüe**: Todo el contenido (emails, reportes, botones, errores) debe estar disponible en Español e Inglés desde el lanzamiento.
+*   **Adaptabilidad**: El sistema debe detectar el idioma del navegador, pero permitir el cambio manual fácil y persistente.
+
+## Regla #13: Seguridad a Nivel de Datos (RLS First)
+**Definición**: Cada implementación que afecte a la base de datos debe tener presente las políticas de Row Level Security (RLS) de Supabase para asegurar el aislamiento y seguridad de los datos.
+**Implicaciones**:
+*   **Seguridad Estructural**: No confiar únicamente en la lógica del frontend o del servicio para el aislamiento de datos entre empresas.
+*   **Validación de Roles**: Verificar que las políticas de RLS permitan las operaciones de CRUD necesarias para cada rol (Admin, Agente, Super Admin).
+*   **Aislamiento Multi-Tenant**: Asegurar que un usuario de una empresa nunca pueda ver ni modificar datos de otra empresa, incluso si conoce los IDs.
+
+## Regla #14: Manejo de Dropdowns Asíncronos
+**Definición**: Los dropdowns que dependen de datos externos (Supabase) deben ser resilientes a condiciones de carrera (race conditions).
+**Implicaciones**:
+*   **Guarda de Valor**: Siempre usar una guarda lógica (`items.any(e => e.id == value) ? value : null`) en el atributo `value` del dropdown para evitar que Flutter lance una excepción o resetee el campo a null silenciosamente si el valor llega antes que la lista.
+*   **Contexto de Carga**: Al cargar listas dependientes (agentes, propietarios), usar siempre el ID de empresa del objeto que se está editando en lugar del contexto global de la sesión, para asegurar consistencia en entornos multi-tenant.
+
+## Regla #15: Prohibido el Silencio en Validaciones
+**Definición**: Un formulario nunca debe fallar la validación sin dar feedback visual inmediato y claro.
+**Implicaciones**:
+*   **Consistencia de Estado**: No aplicar validadores `required` a campos que están deshabilitados (`onChanged: null`) o son de solo lectura si existe la posibilidad de que su valor inicial sea nulo.
+*   **Feedback de Errores**: Si la validación falla, el sistema debe asegurar que el usuario vea el error (scroll automático o SnackBar informativo) para evitar la sensación de que el botón de guardado "no hace nada".
+
+## Regla #16: Preservación de Contexto (Super Admin Safety)
+**Definición**: Las acciones de un Super Admin (con contexto global) no deben alterar accidentalmente la propiedad de los datos de una agencia.
+**Implicaciones**:
+*   **Integridad de IDs**: Al actualizar registros, se debe preservar el `company_id` original del objeto. No se debe sobrescribir con el `companyId` de la sesión actual si este es nulo (caso típico de los Super Admins).
+*   **Aislamiento de Listas**: Las consultas para poblar selectores (agentes de una empresa) deben filtrarse por la empresa propietaria del registro, no por la empresa seleccionada en el dashboard global.
+
+## Regla #17: Confirmación Explícita de Refresco (UI Sync)
+**Definición**: La sincronización entre la base de datos y la interfaz debe ser explícita para evitar datos obsoletos (stale data).
+**Implicaciones**:
+*   **Señal de Éxito**: Usar siempre `Navigator.pop(context, true)` tras una operación exitosa de creación o edición. 
+*   **Refresco Condicional**: La pantalla receptora debe verificar este valor de retorno (`result == true`) para disparar un refresco de sus listas, garantizando que el usuario vea sus cambios de inmediato sin necesidad de recargar manualmente.
+
+## Regla #18: Límites de Inventario y Contenido (SaaS Quotas)
+**Definición**: Para mantener la salud del entorno SaaS, existen límites predefinidos de almacenamiento y registros por agencia.
+**Implicaciones**:
+*   **Límites por Defecto**: Cada agencia inicia con una capacidad máxima de **35 inmuebles activos** y 10 fotos por cada inmueble.
+*   **Conteo de Inmuebles Activos**: Para no penalizar el éxito de la agencia y permitir la conservación de su historial comercial, los inmuebles con estatus **Vendido** (`Vendido`) y **Alquilado** (`Alquilado`) quedan completamente excluidos del conteo del límite de inventario. Únicamente los inmuebles con estatus **Disponible** y **Reservado** consumen cupos activos. El indicador de la interfaz refleja de forma transparente `Inmuebles Activos / Límite` (ej: `3 / 35`).
+*   **Incentivos de Crecimiento**: Estos límites son dinámicos y pueden expandirse automáticamente mediante el sistema de referidos ("Invita a un amigo").
+*   **Gestión del Super Usuario**: El Super Admin tiene la autoridad exclusiva para modificar estos límites manualmente para agencias específicas o casos especiales desde el Super Panel.
+*   **Filtros de Estado de Inventario**: El Panel de Administración de Inmuebles cuenta con una fila de botones de selección (ChoiceChips) interactivos que permiten filtrar instantáneamente la lista por estatus: **Todos**, **Disponible**, **Reservado**, **Vendido** y **Alquilado**. Esta funcionalidad está completamente internacionalizada (i18n), traduciendo automáticamente los estatus según el idioma configurado (Español / Inglés).
+*   **Tarjetas Públicas con Badges de Estatus**: Las tarjetas de inmuebles en la página principal pública (`PropertyCard`) preservan sus proporciones y tamaños de diseño originales intactos. Sobrepuesto elegantemente en la esquina superior izquierda de la imagen se añade un badge de estatus semitransparente con soporte i18n (ej. **Vendido / Sold**, **Alquilado / Rented**, etc.). Para inmuebles no disponibles (vendidos o alquilados), el botón *"Me Interesa"* se deshabilita automáticamente y muestra la etiqueta *"No Disponible / Not Available"*, optimizando el embudo de captación de leads.
+
+## Regla #19: Construcción de Enlaces Multi-Tenant (SaaS URLs)
+**Definición**: Todos los enlaces públicos o vistas previas de URL generados en la interfaz deben reflejar la arquitectura multi-tenant (subdominios por agencia) y ofrecer una UX clara para campos dinámicos.
+**Implicaciones**:
+*   **Dominios Dinámicos**: Nunca incrustar (hardcodear) `localhost` o dominios estáticos genéricos en la UI. Extraer siempre el identificador de la agencia activa (`company.abbr`) a través de `CompanyProvider` para construir la URL (ej. `https://${company.abbr}.alveo.fyi/...`).
+*   **Placeholders Claros**: Si un enlace depende de un alias o "slug" configurable por el usuario y este se encuentra vacío, mostrar siempre un placeholder ilustrativo (ej: `tu-alias`) para evitar que el enlace se vea cortado o parezca un error técnico.
+
+## Regla #20: Enrutamiento de Leads y Experiencia de Navegación (Routing & Attribution)
+**Definición**: La experiencia del visitante anónimo y la asignación de prospectos (leads) se adapta de forma dinámica según la URL de entrada.
+**Implicaciones**:
+1.  **Modo Agente (`/agent/alias`)**: Si el usuario entra por el link personal de un agente, la UI de todo el catálogo se personaliza con la foto y datos de ese agente. **Cualquier lead generado en esa sesión se asigna a dicho agente**, sin importar quién sea el captador original de la propiedad.
+2.  **Modo Agencia (Dominio raíz)**: Si el usuario entra directamente al subdominio de la agencia (ej: `https://agencia.alveo.fyi`):
+    *   La UI muestra la marca corporativa (logo, información general de contacto).
+    *   **Leads Genéricos**: Si usan un formulario de contacto general, el lead va a la bandeja de la Agencia (sin agente asignado) para distribución administrativa.
+    *   **Leads de Propiedad**: Si el usuario solicita información de un inmueble específico, el lead se enruta automáticamente al "Captador" (`listing_agent_id`) de ese inmueble. Si no tiene captador, va a la bandeja general.
+
+## Regla #21: Estrategia de Enrutamiento Web (URL Strategy)
+**Definición**: Alveo, como plataforma SaaS y portal inmobiliario, debe manejar sus rutas siguiendo los estándares de navegabilidad web.
+**Implicaciones**:
+1.  **Entorno Local (Desarrollo)**: Flutter Web utiliza por defecto el "Hash Routing" (`#`). Por lo tanto, para pruebas locales de rutas dinámicas, el formato correcto incluye el hash (ej. `http://localhost:8080/#/agent/alias`).
+2.  **Entorno de Producción**: Para asegurar un aspecto corporativo (y mejorar el SEO), en producción se implementa el "Path URL Strategy". Esto permite URLs limpias.
+3.  **Generación de Enlaces**: Todas las partes del código que generen un enlace para copiar al portapapeles o para compartir deben asumir siempre el formato limpio de producción (sin `#`), para garantizar que los enlaces compartidos por los agentes sean siempre profesionales.
+
+## Regla #22: Manejo de Estado en Rutas Asíncronas (Avoid Future Loops)
+**Definición**: Las consultas a la base de datos para resolver parámetros de URL (como buscar un agente por su slug) deben estar protegidas arquitectónicamente contra repintados (rebuilds) continuos de la interfaz.
+**Implicaciones**:
+1.  **Cero Futures al Vuelo**: Queda estrictamente prohibido instanciar llamadas de red directas (ej. `SupabaseService().getProfileBySlug()`) dentro de constructores de ruta o dentro del parámetro `future` de un `FutureBuilder` en clases sin estado (Stateless). Esto genera un bucle infinito cada vez que la app notifica un cambio global.
+2.  **Uso de Wrappers (Envoltorios) con Estado**: Toda ruta que requiera cargar datos antes de mostrar la pantalla final debe envolverse en un `StatefulWidget` (ej. `AgentRouteWrapper`).
+3.  **Memoria en `initState`**: Dentro del wrapper, el `Future` debe declararse como una variable protegida y ejecutarse exclusivamente dentro de `initState()`. Esto garantiza que la consulta a la base de datos se haga una sola vez por navegación, sin importar cuántas veces se refresque el árbol de widgets.
+
+## Regla #23: Diseño de UI Responsivo y Enfoque Móvil (Mobile-First)
+**Definición**: La plataforma Alveo será consumida mayoritariamente por visitantes y clientes a través de sus teléfonos móviles, por lo que toda característica debe ser 100% funcional y atractiva en pantallas pequeñas.
+**Implicaciones**:
+1.  **Cero Ocultamiento Injustificado**: Queda terminantemente prohibido ocultar botones o acciones críticas (ej. botones de "Contactar", llamadas a la acción, filtros) en dispositivos móviles por "falta de espacio" horizontal.
+2.  **Adaptabilidad Estructural**: En lugar de ocultar, se debe readaptar el diseño. Si una fila de elementos (`Row`) no cabe en móvil, debe transformarse en una columna apilada (`Column`) o usar un flujo flexible (`Wrap`) para garantizar su correcta visualización.
+3.  **Probar Siempre en Móvil**: Cualquier nueva pantalla, diálogo o componente añadido al proyecto debe conceptualizarse primero para su uso móvil (`isMobile`) y posteriormente expandirse o realinearse para aprovechar el espacio extra en pantallas de escritorio.
+
+## Regla #24: Centralización de Formularios Administrativos
+**Definición**: Para evitar la duplicación de código y mantener una única fuente de verdad (Single Source of Truth), la edición de perfiles y entidades debe centralizarse en los módulos administrativos correspondientes.
+**Implicaciones**:
+1.  **Eliminación de Pantallas Redundantes**: Se prohíbe tener pantallas separadas para la "Auto-Edición" de un perfil si el Administrador ya cuenta con un formulario robusto para ello. 
+2.  **Jerarquía de Roles**: Los Súper Administradores y Administradores de Empresa (`company_admin`) son los encargados de configurar los perfiles públicos de sus agentes (Alias, Bio, WhatsApp, Correo de Contacto).
+
+## Regla #25: Delegación de Correos Transaccionales (Serverless)
+**Definición**: La aplicación móvil/web de Flutter nunca debe enviar correos directamente ni integrar SDKs de envío de correos (ej. SendGrid o Brevo) en el código del cliente.
+**Implicaciones**:
+1.  **Responsabilidad del Frontend (Flutter)**: La app solo se encarga de recopilar los datos del usuario, construir un objeto JSON (Payload) con toda la información necesaria (incluyendo los colores del branding `primaryColor` y receptores como `agentEmail`), e invocar a la base de datos o a una Edge Function (`client.functions.invoke`).
+2.  **Responsabilidad del Backend (Supabase)**: Las Edge Functions (ej. `send-budget-email`) son las únicas autorizadas para poseer las API Keys de servicios de terceros y procesar el envío final del correo. Esto garantiza la seguridad de las credenciales y permite modificar la lógica de envío sin tener que actualizar la app en las tiendas.
+
+## Regla #26: Gestión de Servidores Externos (Brevo) mediante Agentes e IAC (MCP)
+**Definición**: Las interacciones de la IA (Agentes MCP) con código backend alojado en Supabase (como Edge Functions para envíos con **Brevo.com**) deben realizarse exclusivamente de forma "Local-to-Cloud" usando herramientas oficiales.
+**Implicaciones**:
+1.  **Estandarización de Correos**: **Brevo.com** se establece como el proveedor oficial y único para envío de correos. Toda nueva función de notificación (suscripciones, recuperación de contraseñas personalizadas) debe seguir utilizando la API HTTP de Brevo dentro de Supabase.
+2.  **Flujo de Modificación vía MCP**: Dado que los Agentes MCP no tienen acceso directo a la consola web de Supabase, el administrador de la plataforma debe otorgar acceso instalando la consola local (`npx supabase`) y autenticándose (`supabase login`). El flujo de la IA siempre será: *Download* de la función -> *Edición* Local -> *Deploy* a la nube, garantizando que el historial del proyecto se mantenga intacto y seguro.
+
+## Regla #27: Jerarquía Estricta de Seguridad en la UI (Role-Based Access)
+**Definición**: La seguridad de las vistas administrativas no debe depender de "ocultar" los botones. Debe garantizarse explícitamente mediante validaciones de roles a nivel de renderizado y enrutamiento.
+**Implicaciones**:
+1.  **Validación de Renderizado**: Cualquier menú de navegación (ej. `AdminDrawer`) o botón que dirija a una pantalla de configuración global (Usuarios, Datos de la Empresa) DEBE estar estrictamente envuelto en un bloque `if (provider.isCompanyAdmin || provider.isSuperAdmin)`.
+2.  **Prevención de Escalada de Privilegios**: Bajo ninguna circunstancia un usuario con rol de `agent` debe tener acceso a pantallas donde pueda visualizar, y mucho menos modificar, el estado o los perfiles de usuarios con permisos superiores (`admin` o `super_admin`).
+
+## Regla #28: Aislamiento de Datos por Rol (Data Isolation - Option B)
+**Definición**: Los agentes deben operar en un entorno de "Privacidad Selectiva" para proteger la integridad de los datos de la empresa y la privacidad de los prospectos.
+**Implicaciones**:
+1.  **Leads y Agenda**: El acceso a prospectos (Leads) y citas de calendario es estrictamente privado. Un agente solo puede visualizar y gestionar registros asociados a su ID de usuario.
+2.  **Inventario (Lectura vs Escritura)**: Se aplica la "Opción B". Los agentes tienen permiso de **Lectura Global** (pueden ver todas las propiedades para vender el catálogo de la agencia), pero tienen permiso de **Escritura Restringido** (solo pueden editar o eliminar propiedades donde figuren como el Captador oficial).
+3.  **Métricas de Dashboard**: Las estadísticas principales del panel deben transformarse en métricas personales cuando el usuario tiene el rol de `agent`.
+
+## Regla #29: Autonomía de Marca Personal para Agentes
+**Definición**: El sistema debe facilitar que los agentes gestionen su identidad profesional de forma autónoma para potenciar su marca personal.
+**Implicaciones**:
+1.  **Gestión de Perfil**: Todo agente debe tener acceso a una pantalla de "Mi Perfil" donde pueda editar su `slug` (alias de URL), `bio`, `whatsapp_number`, `contact_email` y foto sin intervención de un administrador.
+2.  **Validación de Unicidad**: El sistema debe validar que el `slug` sea único a nivel global (o por empresa) antes de guardar cambios para evitar colisiones en los links de perfil.
+
+## Regla #30: Protocolo de Asignación de Leads
+**Definición**: El flujo de prospección debe permitir la transición de un Lead "Público/Agencia" a un Lead "Asignado/Privado".
+**Implicaciones**:
+1.  **Delegación de Administrador**: Solo los roles `admin` o `company_admin` tienen permiso para reasignar un lead a un agente específico.
+2.  **Efecto de Aislamiento**: Al asignar un `assigned_agent_id` a un lead, este registro debe seguir inmediatamente la Regla #28, volviéndose invisible para otros agentes.
+
+## Regla #31: Diseño de UI Adaptativo y Accesibilidad (Dark Mode)
+**Definición**: El desarrollo de nuevas pantallas y componentes debe priorizar la compatibilidad nativa con temas claros y oscuros, evitando colores fijos que rompan la legibilidad.
+**Implicaciones**:
+1.  **Evitar Colores Hardcoded**: Está prohibido el uso de `Colors.black`, `Colors.white` o tonos de `grey` específicos en estilos de texto o fondos de contenedores sin una comprobación de `Theme.of(context).brightness`.
+2.  **Uso de Temas Globales**: Se debe priorizar el uso de las constantes definidas en `AppThemes` y los colores semánticos del `ColorScheme` (ej. `onSurface`, `surface`) para garantizar que la UI se "vea premium" en cualquier modo.
+
+## Regla #32: Protocolo de Notificaciones Multicanal (Lógica de Email)
+**Definición**: Cada solicitud de presupuesto o contacto generada en la plataforma debe activar una notificación sincronizada a todos los actores involucrados para garantizar una respuesta rápida.
+**Implicaciones**:
+1.  **Destinatarios Obligatorios**: Toda notificación enviada vía **Brevo.com** (Supabase Edge Functions) debe incluir en el campo `to` a:
+    *   **El Cliente**: Recibe una copia de su solicitud (Presupuesto/Contacto) como comprobante.
+    *   **La Inmobiliaria (Main Email)**: El correo principal de la empresa configurado en `profiles` o `companies`.
+    *   **El Agente (Captador/Asignado)**: Si el inmueble tiene un agente captador específico, este DEBE recibir una copia directa para iniciar la gestión comercial sin intermediarios.
+2.  **Personalización Dinámica**: El contenido del correo debe adaptarse al `locale` (idioma) del cliente y reflejar la identidad visual (colores y logo) de la empresa emisora.
+3.  **Remitente Estándar**: Mientras no se configure un dominio personalizado (DKIM), el remitente técnico se mantiene como `alveo.soporte@gmail.com`, pero el "Display Name" debe ser el nombre comercial de la inmobiliaria.
+
+## Regla #33: RLS en `profiles` — Acceso Público por Slug (Modo Agente Anónimo)
+**Contexto**: Cada agente tiene un link personal (`/agent/su-slug`) que puede compartir con clientes. Cuando un visitante anónimo entra por ese link, el sistema necesita leer el perfil del agente desde Supabase para activar el "Modo Agente".
+**Solución — Política RLS aplicada en Supabase**:
+```sql
+CREATE POLICY "anon_read_profiles_by_slug" ON public.profiles FOR SELECT TO anon USING (slug IS NOT NULL);
+```
+**Seguridad**: Esta política solo expone perfiles que tienen un `slug` configurado explícitamente (agentes activos). Los perfiles de admins, super admins y clientes sin slug no son legibles por visitantes anónimos.
+
+## Regla #34: Distinción entre Agentes y Ejecutivos de Cuenta (Freelance)
+**Contexto**: Existen dos tipos de "vendedores" en el entorno, con propósitos totalmente distintos.
+1. **Agentes Inmobiliarios**: Pertenecen a una Inmobiliaria específica. Su objetivo es vender/alquilar los inmuebles del inventario.
+2. **Ejecutivos de Cuenta (Salespersons)**: Son contratistas de Alveo (SaaS). Su objetivo es captar nuevas inmobiliarias para la plataforma. Ganan una comisión sobre la facturación de las empresas que refieren.
+
+## Regla #35: Funcionamiento de la Estrategia de Marketing #3 (Híbrida)
+**Lógica de Negocio**: Al registrarse bajo el código de un Ejecutivo, la empresa recibe automáticamente descuentos acumulativos y bonos de capacidad. El Ejecutivo recibe un porcentaje (ej: 40%) de cada pago realizado por las empresas vinculadas a su alias.
+
+## Regla #36: Estrategias de Crecimiento y Registro (Referidos y Afiliados)
+**Contexto**: Existen 3 flujos de entrada para nuevas inmobiliarias:
+1. **Estrategia 1 (Referidos B2B)**: Una agencia invita a otra (`ref_email`).
+2. **Estrategia 2 (Afiliados / Ejecutivos)**: Un vendedor de Alveo comparte su link (`ref`).
+3. **Estrategia 3 (Orgánico)**: El usuario llega por iniciativa propia.
+
+## Regla #37: Gestión de Lógica en la Nube (Edge Functions)
+Procesos críticos como envíos de correo (`send-budget-email`, `send-subscription-email`) y el orquestador de registros (`handle-auto-registration`) se delegan a Supabase Edge Functions usando la API de Brevo.
+
+## Regla #38: Normalización y Reserva de Identificadores (Slugs/Alias)
+Todos los alias y slugs deben guardarse y consultarse en **minúsculas**. No se permite el uso de palabras reservadas del sistema como `admin`, `login`, `register`, etc.
+
+## Regla #39: Sincronización entre Edge Functions y Triggers de DB
+Al invocar `auth.admin.createUser()` desde una función, es obligatorio pasar `company_id` en `user_metadata` para que el Trigger de DB funcione correctamente. Usar siempre `.upsert()` para evitar conflictos de duplicidad.
+
+## Regla #40: Integridad Multi-tenant y Limpieza Atómica
+Toda tabla con `company_id` debe tener Foreign Keys con `ON DELETE CASCADE`. Esto garantiza que al borrar una inmobiliaria no queden registros huérfanos.
+
+## Regla #41: Protocolo "Apúntalo" (Meta-Regla de Documentación)
+Cuando el USER escriba "**apúntalo**", la IA debe sintetizar aprendizajes técnicos o de negocio del turno y redactar nuevas reglas para prevenir errores futuros.
+
+## Regla #42: Conflictos de Sesión por Reciclaje de Subdominios
+Tras borrar y recrear una empresa con el mismo subdominio, es obligatorio limpiar Cookies y LocalStorage para evitar errores **403 Forbidden** por credenciales obsoletas.
+
+## Regla #43: Parámetros de URL en Flutter Web (Hash Routing)
+Para rutas con parámetros (ej: `/register?ref=alias`), no usar el mapa estático `routes`. Usar `onGenerateRoute` y pasar `settings` al `MaterialPageRoute` para preservar los parámetros.
+
+## Regla #44: Despliegue en Producción con Path Routing (Vercel)
+Para URLs limpias (sin `#`), configurar `vercel.json` con rewrites a `index.html` y activar `usePathUrlStrategy()` en el `main()` de Flutter.
+
+## Regla #45: Vercel: Proyectos Múltiples y Despliegue SPA con `build/web`
+El proyecto oficial en Vercel se llama **`web`**. Se debe vincular explícitamente y desplegar siempre el contenido de `build/web` (incluyendo el `vercel.json`) para evitar errores 404.
+
+## Regla #46: Robustez en Carga de Multimedia (Image Network Safety)
+Antes de usar `Image.network()`, validar que la URL comience con `http/https` y usar `errorBuilder` para mostrar placeholders descriptivos en caso de fallo.
+
+## Regla #47: Sincronización de Flujos de Email (Frontend/Backend Payload)
+Al añadir nuevos estados de correo en el frontend, verificar inmediatamente que la Edge Function tenga el caso implementado en su lógica.
+
+## Regla #48: Automatización de Notificaciones de Facturación
+El sistema gestiona eventos de Pago Reportado, Confirmado, Recordatorio y Suspensión de forma proactiva mediante la Edge Function `send-subscription-email`.
+
+## Regla #49: Gestión de Tareas Programadas (Database Cron Jobs)
+Los procesos periódicos (como recordatorios diarios) se implementan como funciones SQL y se programan con la extensión `pg_cron` de Supabase.
+
+---
+
+### Regla #50: Centralización de Diálogos Críticos (Utility Pattern)
+**Contexto**: Acciones de alto impacto y lógica compleja (como reportar pagos bancarios) se invocan desde múltiples puntos.
+**Regla**: Usar la clase `PaymentDialogUtils` para invocar el formulario de reporte, garantizando consistencia en toda la plataforma.
+
+### Regla #51: [SUPER REGLA CRÍTICA] Despliegue en Vercel y Nombres de Proyecto
+**ESTA REGLA ES ABSOLUTA Y NO PUEDE SER IGNORADA.**
+1. **Proyecto Único**: El ÚNICO proyecto permitido en Vercel es **`web`**.
+2. **Prohibición de Nombres**: Queda **ESTRICTAMENTE PROHIBIDO** crear o desplegar a un proyecto llamado `alveo-real-estate` o variantes.
+3. **Acción ante Error**: Si existe un proyecto erróneo, ELIMINARLO inmediatamente (`vercel rm ...`).
+4. **Comando Mandatorio**: `npx vercel deploy build/web --prod --yes --name web`
+
+### Regla #52: Distinción de Terminología (Solicitudes vs Requests)
+1. **Solicitudes (Leads)**: Interés de clientes en inmuebles (`budget_requests`).
+2. **Registro de Empresas**: Se realiza de forma directa vía `/register` o mediante creación manual por el Super Admin. No se requiere aprobación previa para el registro público.
+
+### Regla #53: Gestión vs Administración (Comisiones)
+Se diferencia el pago único por alquiler (`default_management_pct`) de la comisión mensual por gestión de cobro (`default_admin_commission_pct`).
+
+### Regla #54: Estados Finales de Inmuebles
+Los estados válidos además de Disponible son: Vendido, Alquilado y Reservado.
+
+### Regla #55: Permanencia de Bonos de Crecimiento
+Los descuentos por referido son vitalicios mientras la agencia referida esté activa. Los bonos de capacidad afectan a toda la cuenta de forma global.
+
+### Regla #56: Geolocalización de Precisión
+La chincheta en el mapa muestra la ubicación EXACTA cargada, no un radio aproximado.
+
+### Regla #57: Buscador por Referencia
+El buscador principal debe priorizar la coincidencia exacta con el `ref_number` del inmueble.
+
+### Regla #58: Interacción de WhatsApp
+El botón de WhatsApp abre la app sin mensaje pre-cargado para permitir una interacción manual natural.
+
+### Regla #59: Eslogan e Identidad de Marca (i18n)
+El eslogan oficial es **"Alveo - Asistente Inmobiliario"**. Debe gestionarse vía i18n (`Alveo - Real Estate Assistant` en EN).
+
+### Regla #60: Modelo de Negocio SaaS y PMS
+Suscripción por cuota fija (sin porcentajes por uso). La agencia es dueña de sus datos, el software es un servicio centralizado.
+
+### Regla #61: Diseño de Galería Inmersiva (Modo Cine)
+La galería de fotos principal utiliza un diseño de pantalla completa:
+- **Superposición**: Dirección y localización flotantes con sombras.
+- **Responsividad**: Paddings dinámicos para móvil.
+- **Foco Visual**: Sin botón CTA para priorizar la estética.
+- **Botón Cerrar**: Círculo rojo sólido con "X" blanca, grande y prominente.
+- **Zoom In**: Incluye efecto de lupa (magnifier) para escritorio.
+
+---
+
+### Regla #67: Protocolo de Despliegue en Vercel (Continuidad)
+Para que las rutas limpias (Path Routing) funcionen en producción, el archivo `vercel.json` **DEBE** estar físicamente dentro de la carpeta `build/web` antes de ejecutar el comando de despliegue. Esto asegura que Vercel aplique los rewrites al SPA compilado.
+
+### Regla #68: Brand Identity & Terminology (Entorno Alveo)
+El término "Ecosistema" queda oficialmente sustituido por "**Entorno**" en todas las comunicaciones. Alveo es un "**Asistente Inmobiliario**" basado en un entorno SaaS/PMS bajo suscripción fija, enfocado en el tráfico de redes sociales y el soporte humano premium.
+
+### Regla #69: Ubicación del ejecutable de Flutter
+Para tareas de compilación y ejecución de scripts locales desde el agente, el ejecutable de Flutter está ubicado en la ruta estricta `C:\src\flutter`. Los comandos deben ejecutarse apuntando a `C:\src\flutter\bin\flutter.bat`.
+
+### Regla #70: Integración de Redes Sociales (LinkedIn)
+La plataforma soporta LinkedIn de forma unificada. La columna `linkedin_url` (nullable TEXT) mapeada en el modelo `Company` debe exponerse y persistirse en Supabase mediante el método `updateCompany`. Las interfaces de visualización pública (encabezado global, footer principal y drawer de navegación) deben renderizar dinámicamente el icono oficial de LinkedIn (`FontAwesomeIcons.linkedin`) condicionado a la existencia y validez de la URL configurada por el usuario.
+
+### Regla #71: Arquitectura del Asistente Virtual (IA)
+El Asistente Virtual ("Ava") se basa en modelos de **Gemini Flash** (por soporte multimodal y velocidad). 
+- **Frontend (Flutter)**: El parseo de Markdown para respuestas de la IA se debe realizar utilizando el paquete `flutter_markdown` para garantizar que los enlaces sean clickeables y el texto sea copiable (Selectable).
+- **Backend (Supabase Edge Functions)**: Toda interacción con LLMs debe encapsularse en Edge Functions (ej. `alveo-ai-chat`). El rastreo de uso (tokens, modelo, tipo de input) se registra asíncronamente en la tabla `ai_usage` mediante una promesa "fire and forget" (sin `await`) usando la Service Role Key, para no bloquear la respuesta al usuario.
+
+### Regla #72: Despliegues de Supabase sin Docker Local
+Cuando el entorno local carece de Docker o existen problemas de permisos (como falta de symlinks en Windows sin modo desarrollador), no se debe frenar el flujo. Si el proyecto remoto está vinculado (`.supabase/project-ref`), se pueden desplegar migraciones y funciones directamente a la nube usando:
+- `npx supabase db push` para migraciones SQL.
+- `npx supabase functions deploy <nombre>` para Edge Functions.
+- `npx supabase secrets set KEY=VALUE` para variables de entorno remotas.
+
+### Regla #73: Costos y Cuotas de Modelos de Inteligencia Artificial (Gemini)
+Para el Asistente Virtual ("Ava"), siempre apuntar de forma predeterminada al alias de modelo genérico **`gemini-flash-latest`** en producción y desarrollo, a menos que un modelo en específico sea requerido y costeado.
+- **Evitar modelos restrictivos en capa gratuita**: Modelos específicos como `gemini-2.0-flash` o `gemini-2.5-flash` pueden tener asignadas cuotas gratuitas de "0" u ofrecer límites severamente bajos, provocando errores HTTP 500 por Rate Limit casi inmediatos.
+- **Costo Operativo Mínimo**: La versión Flash ofrece márgenes gratuitos gigantescos (ej. 1,500 rpm) y costos ridículamente bajos tras superar la cuota libre (~$0.075 USD por cada 1 millón de tokens de entrada). Por lo que el costo no debe ser una preocupación para el escalamiento orgánico de las inmobiliarias. El registro asíncrono en `ai_usage` debe mantenerse activo para futura monetización si es necesaria.
+
+### Regla #74: Consistencia de Enrutamiento de Propiedades (URLs Limpias)
+Todos los enlaces públicos o vistas previas de inmuebles generados por el backend (Edge Functions) y el frontend deben coincidir estrictamente con el formato `/refXXX` (donde XXX es el número de referencia con ceros a la izquierda para completar 3 dígitos, ej: `/ref044`). Esto asegura que el router de Flutter capture la ruta directamente y evita errores de redirección 404 en plataformas SPA como Vercel.
+
+### Regla #75: Sanitización de Errores del Asistente Virtual (Ava UI)
+Toda excepción, error HTTP o fallo del backend del Asistente Virtual ("Ava") debe ser interceptado en el frontend. Queda estrictamente prohibido mostrar stack traces técnicos o mensajes crudos de error (tales como `FunctionException`, `Quota exceeded` o `429`) en las burbujas del chat. En su lugar, se deben mapear los errores a claves de traducción i18n amigables (`ava_limit_reached` en caso de límites de cuota/rate-limits y `ava_error` en cualquier otro tipo de fallo).
+
+### Regla #76: Interceptación y Navegación SPA de Enlaces de IA
+En interfaces de chat de IA (como Ava), los enlaces recomendados de propiedades (que apuntan a URIs absolutas como `https://[subdominio].alveo.fyi/refXXX`) deben interceptarse en la capa de UI de Flutter (`ChatMessageBubble` en `onTapLink`).
+- **Navegación Interna**: Si el enlace corresponde a una propiedad `/refXXX` (verificado mediante `segments.last.startsWith('ref')`), el sistema debe cerrar primero el modal o bottom sheet del chat (`Navigator.pop(context)`) y luego navegar internamente utilizando `Navigator.pushNamed('/refXXX')`.
+- **Independencia del Host**: Esto garantiza una navegación inmediata tipo Single Page Application (SPA), evita abrir pestañas secundarias innecesarias en producción y permite que en desarrollo local (`http://localhost:...`) el enlace cargue directamente en el servidor local de pruebas en lugar de saltar al servidor de producción.
+
+### Regla #77: Sugerencias Rápidas Dinámicas en Chat de IA según Configuración Regional
+**Contexto**: El Asistente Virtual ("Ava") requiere presentar opciones o sugerencias rápidas (chips) que sean altamente relevantes al contexto de la agencia inmobiliaria en lugar de textos estáticos o genéricos.
+**Regla**: 
+1. **Construcción Dinámica**: Las sugerencias rápidas de búsqueda de inmuebles deben construirse dinámicamente utilizando los datos regionales configurados por el tenant (tales como `company.city` de `CompanyProvider`).
+2. **Soporte i18n y Marcadores de Posición**: Los textos de las sugerencias deben obtenerse de las traducciones oficiales (`ava_chip_houses_sale`, `ava_chip_houses_rent`, etc.) con soporte para parámetros dinámicos de reemplazo (`{0}`).
+3. **Fallbacks Localizados**: Si la ciudad del tenant no está configurada, proveer fallbacks amigables y localizados en el frontend (ej: *"nuestra ciudad"* en español y *"our city"* en inglés).
+4. **Optimización Táctil Móvil**: Utilizar `scrollDirection: Axis.horizontal` y la física `BouncingScrollPhysics()` en el `ListView` contenedor para ofrecer una experiencia de deslizamiento horizontal suave y nativa en dispositivos móviles.
+
+### Regla #78: Despliegue SPA en Vercel y Redirección Edge sin Bucle 308 (Rutas a `/`)
+**Contexto**: Al utilizar `"cleanUrls": true` en Vercel, cualquier redirección comodín que apunte físicamente a `/index.html` entra en bucle infinito o conflictos con la redirección permanente `308` automática de Vercel, resultando en un error **404 estático**.
+**Regla**:
+1. **Destino Limpio a `/`**: Las reglas de enrutamiento SPA para Vercel deben apuntar el destino (`dest`) directamente a la raíz limpia de la SPA `/` en lugar de `/index.html`.
+2. **Uso de Routes con Expresiones Regulares**: Evitar la directiva `rewrites` (que inyecta verificaciones físicas `check: true` en el disco). Utilizar la directiva de bajo nivel `routes` en `vercel.json` con expresiones regulares nativas de JavaScript puras (no globs de Express).
+3. **Servir Archivos Estáticos**: Incluir siempre `{ "handle": "filesystem" }` al principio de la lista de rutas para garantizar que Vercel sirva de inmediato todos los activos compilados reales (como `main.dart.js`, `assets/`, `favicon.ico`, etc.).
+4. **Esquema de Configuración Infalible**:
+   ```json
+   {
+     "cleanUrls": true,
+     "trailingSlash": false,
+     "routes": [
+       { "handle": "filesystem" },
+       { "src": "^/(ref.*)$", "dest": "/" },
+       { "src": "^/agent/(.*)$", "dest": "/" },
+       { "src": "^/register$", "dest": "/" },
+       { "src": "^/login$", "dest": "/" }
+     ]
+   }
+   ```
+5. **Despliegue Pre-built**: Compilar localmente con `flutter build web --release`, compilar el paquete de Vercel localmente con `npx vercel build --prod` desde el directorio de compilación, y finalmente desplegar con `npx vercel deploy --prebuilt --prod`. Esto fuerza la sincronización exacta de la configuración sin procesamiento en los servidores remotos.
+
+---
+
+### Regla #79: Extracción de Parámetros en Simuladores de IA Sin Costo (Mock AI Simulator Rules)
+**Contexto**: Los entornos SaaS de pruebas suelen requerir un simulador de Inteligencia Artificial gratis (`mock-test`) para que los usuarios prueben la plataforma sin incurrir en costos de APIs comerciales. Si el simulador carece de un analizador (parser) robusto, ignorará filtros esenciales (como la ciudad) y retornará registros fuera de contexto (ej. propiedades en Valencia al buscar en Anaco), frustrando la experiencia del usuario.
+**Regla**:
+1. **Consistencia de Filtros**: Todo simulador "Mock" que reemplace llamadas a LLM reales debe implementar análisis de palabras clave y segmentación de texto para emular fielmente el comportamiento de "Function Calling" del LLM real.
+2. **Extracción Dinámica de Ciudad**: Utilizar un parser que segmente el texto buscando palabras precedidas por preposiciones geográficas como `"en"` (ES) o `"in"` (EN).
+3. **Filtro de Exclusión de Stop Words**: Excluir estrictamente las palabras clave comunes de la consulta de base de datos (`venta`, `alquiler`, `casa`, `apto`, `inmueble`, `la`, `el`, etc.) para evitar falsos positivos al extraer la ciudad.
+4. **Validación y Corte**: Asignar como filtro de ciudad el primer término válido mayor a 2 caracteres y detener el ciclo (`break`) una vez detectada la ciudad geográfica.
+5. **Filtrado Secundario por Palabra Clave**: Si el usuario utiliza subcategorías o palabras específicas en su texto (como "villa" o "piscina/pool"), el simulador debe aplicar un filtro secundario en memoria sobre la lista de resultados de la base de datos. Si hay coincidencias en el título o descripción de las propiedades, se limita el resultado únicamente a ellas (ej. filtrar la "Casa de Campo" al buscar "villas", entregando solo aquellas propiedades que tengan "Villa" en su título). De igual forma, si busca genéricamente `"casa"`, se deben **excluir** las villas de los resultados para mantener las intenciones de búsqueda perfectamente separadas, emulando la precisión de un LLM real.
+
+---
+
+### Regla #80: Tolerancia a Errores Ortográficos en Búsquedas Geográficas (Fuzzy City Matching)
+**Contexto**: Los usuarios a menudo cometen errores tipográficos comunes en el teclado móvil (ej. "lecharia" en lugar de "Lechería") o ignoran los acentos correctos al interactuar con el Asistente Virtual. Si el sistema hace una consulta exacta con `ilike`, fallará en entregar resultados válidos y reportará que no existen propiedades, afectando severamente la conversión.
+**Regla**:
+1. **Fuzzy Matching Geográfico**: Toda consulta de búsqueda de inmuebles por ciudad debe pasar por un interceptor de coincidencia aproximada (`findBestCityMatch`) antes de compilar la consulta final a la base de datos.
+2. **Normalización y Máscara de Vocales**:
+   * Primero, normalizar los caracteres quitando acentos y convirtiendo a minúsculas (`normalize("NFD").replace(/[\u0300-\u036f]/g, "")`).
+   * Si no hay coincidencia directa, aplicar una **máscara de vocales** (reemplazando `a, e, i, o, u` por `*`) para comparar las estructuras consonánticas.
+   * Esto permite asociar de forma instantánea e infalible términos aproximados como `"l*ch*r**"` de *"lecharia"* con el registro real de *"Lechería"* en la base de datos de la inmobiliaria.
+3. **Mapeo al Nombre Real**: Al encontrar la coincidencia aproximada con alguna de las ciudades con propiedades activas registradas en la empresa, reescribir dinámicamente el parámetro `args.city` con el nombre correcto y acentuado de la base de datos, garantizando que el filtro SQL funcione de manera perfecta.
+
+---
+
+### Regla #81: Gestión e Integración de Claves Secretas y Entrada Multimodal de Voz (API Key Secrets)
+**Contexto**: El Asistente Virtual ("Ava") requiere transicionar fluidamente entre el Simulador de Pruebas (`mock-test`) y la Inteligencia Artificial Real Multimodal (Gemini Flash) para soportar notas de voz y análisis cognitivo complejo de manera segura.
+**Regla**:
+1. **Configuración Centralizada de Secretos**: La clave `GEMINI_API_KEY` debe ser gestionada como un secreto de entorno en la nube de Supabase. Se configura globalmente mediante el CLI de Supabase para evitar exponer credenciales en el cliente:
+   `npx supabase secrets set GEMINI_API_KEY=tu_api_key`
+2. **Capa Multimodal Gratuita (Google AI Studio)**: Activar el modelo real no requiere cargos comerciales obligatorios. Se deben priorizar claves de Google AI Studio en su capa gratuita (15 RPM / 1,500 RPD), la cual soporta nativamente la recepción y procesamiento de archivos de audio (notas de voz) en formato base64 de manera 100% gratuita para pruebas de negocio.
+3. **Transición Transparente**: Al cambiar el modelo en la interfaz de la inmobiliaria, la Edge Function redirige en caliente la petición del interceptor mock a la API de Gemini, permitiendo probar la voz y flujos de IA reales de inmediato y sin necesidad de realizar nuevas compilaciones en el frontend.
+
+### Regla #82: Modelo de IA por Defecto en Auto-Registros (`mock-test` Default Model)
+**Contexto**: Al auto-registrarse una nueva empresa en el portal, es fundamental que la experiencia inicial sea completamente funcional, fluida y libre de barreras de configuración o limitaciones de cuotas de API externas. Si se asigna un modelo de IA comercial como `gemini-flash-latest` por defecto antes de que el administrador configure su propia clave o active su cuenta, las primeras interacciones del usuario con el asistente virtual Ava fallarán con errores de cuota (429) o fallos de autenticación.
+**Regla**:
+1. **Configuración Inicial Segura y Activa**: En el flujo de auto-registro de empresas (controlado por la Edge Function `handle-auto-registration`), se debe forzar por defecto el campo `ai_model` al valor de `'mock-test'` (Simulador de Pruebas Ilimitado / Gratis) y marcar explícitamente el campo `has_ai_agent` como `true`.
+2. **Experiencia de Usuario Ininterrumpida**: Esto garantiza que toda nueva inmobiliaria cuente con el asistente virtual Ava activo y 100% operativo desde el primer segundo de su creación sin requerir claves API iniciales.
+3. **Migración Voluntaria**: El administrador podrá posteriormente cambiar el modelo a Gemini Flash real desde su panel de ajustes corporativos cuando esté listo para producción.
+
+---
+
+### Regla #83: Operación en Capa de Pago por Uso de Gemini (Pay-As-You-Go Enterprise Execution)
+**Contexto**: Cuando una inmobiliaria en producción transiciona de la Capa Gratuita a la Capa de Pago por Uso (Pay-As-You-Go) en Google AI Studio, se eliminan las limitaciones severas de cuota (15 RPM) y se activan las garantías comerciales de privacidad de Google, asegurando un desempeño óptimo para escala empresarial sin necesidad de cambiar de API key.
+**Regla**:
+1. **Transición 100% Transparente**: Al estar la clave secreta `GEMINI_API_KEY` gestionada en la nube de Supabase a nivel de Edge Function, la activación de la capa de pago en el dashboard de Google se propaga de forma transparente. La aplicación cliente y el backend continúan operando de inmediato y sin necesidad de realizar nuevas compilaciones ni configuraciones.
+2. **Garantía de Privacidad de Datos**: Bajo este esquema comercial, Google garantiza por contrato la confidencialidad total: ni los datos de la inmobiliaria, ni los chats de los usuarios, ni los prompts del sistema serán utilizados para entrenar modelos públicos.
+3. **Escalabilidad de Cuota**: Los límites aumentan de inmediato, permitiendo cientos de solicitudes simultáneas por minuto para responder a campañas publicitarias masivas de captación inmobiliaria sin riesgo de bloqueos por tasa de uso.
+
+---
+
+### Regla #84: Grabación de Audio en Flutter Web (Transient User Activation)
+**Contexto**: El botón de micrófono del Asistente Virtual (Ava) fallaba silenciosamente en producción: el navegador no mostraba el diálogo de permiso de micrófono y la grabación nunca iniciaba. El diagnóstico reveló una violación de la política de seguridad del navegador llamada **Transient User Activation**.
+
+**Causa Raíz**: Los navegadores modernos (Chrome, Firefox, Safari) exigen que `getUserMedia()` — la API que solicita acceso al micrófono — sea invocada **directamente** dentro del stack de llamadas de un gesto del usuario (ej. un `onPressed`). Si la llamada se delega a un widget hijo que la ejecuta en su `initState()`, la cadena de activación ya expiró en el ciclo de `setState → rebuild → initState`, y el navegador **bloquea la solicitud sin mostrar ningún diálogo ni error**.
+
+**Regla**:
+1. **Prohibición de Delegación**: Queda estrictamente prohibido iniciar la grabación de audio (`_audioRecorder.start()`) dentro del `initState()` de un widget hijo creado por un `setState`. Esto rompe el contexto de activación transitoria del navegador.
+2. **Invocación Directa Obligatoria**: La llamada a `_audioRecorder.start()` (que internamente llama a `getUserMedia()`) DEBE ejecutarse en la función `onPressed` del botón directamente, **antes** de cualquier `setState` o delegación que pueda interrumpir el contexto de activación.
+3. **Patrón Correcto (Inline Recording)**: Toda la lógica de grabación (`AudioRecorder`, `Timer`, estado `_isRecordingVoice`, `_recordSeconds`) debe vivir en el `StatefulWidget` que contiene el botón de micrófono. La UI de grabación se renderiza condicionalmente en el mismo `build()`, sin crear nuevos widgets hijos que inicien la grabación.
+4. **Anti-patrón a Evitar**:
+   ```
+   // ❌ INCORRECTO: getUserMedia() se llama en initState(), fuera del gesto
+   onPressed: () => setState(() => _isRecordingVoice = true);
+   // VoiceRecorderWidget.initState() -> _audioRecorder.start() -> BLOQUEADO
+   ```
+5. **Patrón Correcto**:
+   ```
+   // ✅ CORRECTO: getUserMedia() se llama DIRECTAMENTE en el gesto
+   onPressed: () async {
+     await _audioRecorder.start(...); // dentro del gesto del usuario
+     if (mounted) setState(() => _isRecordingVoice = true); // DESPUÉS
+   }
+   ```
+6. **Pre-chequeo de Permisos en Web**: Para que el navegador muestre la ventana flotante de permiso de micrófono, se debe llamar a `await _audioRecorder.hasPermission()` DIRECTAMENTE dentro del gesto del usuario (antes de cualquier delay o `setState`). Si se llama fuera de la activación transitoria del usuario (ej. después de un `await` o en un `initState`), el navegador lo bloqueará silenciosamente y retornará `false`. Al llamarlo directamente en el gesto, se abre el diálogo nativo del navegador de forma segura.
+7. **MissingPluginException en Web (Caché Corrupto)**: Si al intentar interactuar con un plugin web (como `record`) se obtiene un error `MissingPluginException` para el canal de comunicación, se debe a que la compilación incremental de Flutter omitió la inyección JavaScript del plugin web. Para solucionarlo de raíz, se debe purgar el caché ejecutando `flutter clean`, re-vincular dependencias con `flutter pub get` y compilar una versión fresca con `flutter build web`.
+
+---
+
+### Regla #85: Sincronización Unificada de Leads y Citas en Agenda (CRM & Calendar Sync)
+**Contexto**: En Alveo, el módulo de **Leads** (Solicitudes) y **Agenda** (Calendario) comparten la misma tabla subyacente (`budget_requests`). Si al agendar una cita o al vincular una solicitud preexistente no se sincronizan correctamente los campos, se pueden duplicar los registros o generar discrepancias operativas críticas.
+**Regla**:
+1. **Identificador de Agenda Local**: La tabla `budget_requests` tiene un constraint `NOT NULL` en `client_email`. Para citas directas creadas desde el calendario que no pertenecen originalmente a un lead preexistente, se debe usar la dirección `'agenda@local'` como correo por defecto para satisfacer el constraint.
+2. **Filtrado Discriminador**: Al consultar las solicitudes generales en el CRM, para evitar que se mezclen citas directas con leads reales, se debe excluir el correo local mediante `.neq('client_email', 'agenda@local')`. Queda prohibido filtrar usando `is_appointment = false`, ya que aquellos leads reales que son convertidos a citas (híbridos) deben seguir siendo visibles en el listado de leads del CRM.
+3. **Conversión Atómica a Cita**: Cuando un lead pendiente es convertido a cita (vinculación de lead preexistente), el sistema no debe crear un registro nuevo. Se debe actualizar el registro del lead existente usando su UUID, activando `is_appointment = true` y forzando su estado general (`status`) a `'responded'` (Respondido), de modo que se cumpla de forma atómica el flujo de cierre del lead y su reflejo en la agenda.
+
+---
+
+### Regla #86: Prevención de Crashes en Dropdowns de Flutter (Dropdown Constraint Safety)
+**Contexto**: Los componentes `DropdownButton` y `DropdownButtonFormField` en Flutter exigen por aserción estricta de la biblioteca que su valor actual (`value`) esté presente exactamente dentro de la lista de opciones (`items`). Si el backend o la base de datos escribe un valor con diferencia de mayúsculas/minúsculas o una palabra no contemplada en el dropdown (ej: `'Pending'` con P mayúscula, o `'Confirmada'` en español cuando el backend usa `'confirmed'`), la aplicación de Flutter lanzará una excepción fatal inmediatamente al abrir la pantalla de edición, inutilizando el calendario administrativo.
+**Regla**:
+1. **Definición Estricta en Minúsculas**: Las citas en base de datos deben registrarse estrictamente con estados en minúsculas: `'pending'`, `'confirmed'`, `'cancelled'`, `'done'`.
+2. **Compatibilidad en Backend**: Toda Edge Function o Agente de IA (como Ava) que registre o actualice citas en la base de datos de Supabase debe escribir de manera forzada el estado de la cita en minúsculas (ej: `'pending'`).
+3. **Validación de Rango en UI**: Al renderizar el dropdown en Flutter, asegurar que el valor asignado al widget coincida con alguno de los elementos de la lista en minúsculas, evitando variaciones de idioma u ortográficas en el valor de base de datos.
+
+---
+
+### Regla #87: Alternancia de Roles en Gemini API & Prevención de Historial Duplicado
+**Contexto**: La API de Gemini es sumamente estricta con la estructura del historial de chat, exigiendo que los roles de los mensajes alternen de forma exacta entre `user` (usuario) y `model` (asistente). Si se envían dos mensajes seguidos con el mismo rol (ej. `[..., user, user]`), la API falla inmediatamente con un error 400 Bad Request o devuelve una respuesta vacía interpretada por la interfaz de usuario como `"No response"`.
+**Regla**:
+1. **Exclusión del Mensaje Actual en el Historial del Frontend**: Al construir el historial de chat (`_buildHistory()`) en Flutter para enviarlo al Edge Function, se debe excluir siempre el último mensaje del listado local de la interfaz de usuario, puesto que ese mensaje ya se envía de forma independiente como el parámetro principal (`message` o `audio_base64`). Al excluirlo, evitamos que el mensaje actual se duplique al final del historial de la Edge Function.
+2. **Alternancia Asegurada**: El historial de chat que recibe la Edge Function debe estar compuesto únicamente por mensajes alternantes pasados finalizados en rol `model`, garantizando que al inyectar el mensaje actual (rol `user`) al final del arreglo, el cuerpo enviado a Gemini termine de forma segura y válida en rol `user` (`[..., model, user]`).
+
+---
+
+### Regla #88: Uso de Cliente de Rol de Servicio (Service Role) en Operaciones Públicas de CRM (RLS SELECT Bypass)
+**Contexto**: Al interactuar con el Asistente de IA (Ava) de forma pública/anónima desde la App Web, el token de autorización de Supabase representa al rol `public`. La base de datos tiene una política RLS de `INSERT` público en `budget_requests`, pero no permite la lectura (`SELECT`) de registros a usuarios no autenticados. Si la Edge Function realiza consultas de colisión horaria (SELECT) o utiliza una cláusula `RETURNING` en el insert (vía `.select().single()`) usando el `supabaseClient` del usuario anónimo, Postgres bloquea la operación y la llamada a la herramienta `registrar_solicitud_visita` falla silenciosamente por falta de privilegios SELECT.
+**Regla**:
+1. **Cliente de Servicio Administrativo**: Toda herramienta de IA ejecutada en el backend (Supabase Edge Functions) que requiera realizar consultas de disponibilidad (SELECT) en tablas protegidas (como `budget_requests` para citas y CRM) o necesite leer la fila recién creada (INSERT con retorno), DEBE inicializar y utilizar un cliente de Supabase administrativo (`supabaseAdmin`) con la `SUPABASE_SERVICE_ROLE_KEY`.
+2. **Seguridad Controlada por Backend**: El uso de `supabaseAdmin` es seguro y necesario en este contexto ya que la ejecución está encapsulada y controlada dentro del flujo lógico validado del LLM y de la Edge Function, previniendo abusos en los accesos de lectura directos por parte de los clientes web.
+
+---
+
+### Regla #89: Guía de Formato Conversacional para Fechas y Horas (Alineación Conversacional)
+**Contexto**: A fin de asegurar que el usuario conozca de qué manera ingresar la fecha y hora preferida para sus citas con el Agente de IA, resulta idóneo que la asistente guíe al usuario de manera clara e intuitiva.
+**Regla**:
+1. **Ejemplos Explícitos en el Prompt de Ava**: El prompt del sistema (`systemPrompt`) debe instruir a Ava a incorporar siempre de forma proactiva ejemplos concisos de formatos de fecha y hora cuando solicite estos datos al usuario.
+2. **Formatos Soportados en los Ejemplos**: Ava debe sugerir formatos tradicionales y en lenguaje natural en su mensaje, tales como `(dd/MM/yy)` (ej. `28/05/26`) o formatos en lenguaje natural y AM/PM (ej. `el jueves a las 4pm` / `11pm (23:00)`), indicando que el sistema comprende ambos esquemas de manera fluida y flexible.
+
+---
+
+### Regla #90: Formato de functionResponse en Gemini API (Unwrapping and JSON Object Safety)
+**Contexto**: La API de Gemini requiere estrictamente que la propiedad `response` dentro de una parte `functionResponse` sea un objeto JSON plano que coincida directamente con los campos de salida definidos en la declaración de la herramienta. Si el backend duplica o envuelve el resultado en una estructura no estándar (ej. `{ name: ..., content: ... }`) o envía un arreglo plano (como el resultado de `buscar_propiedades`), la API de Gemini no logrará interpretar la respuesta de la función y continuará llamando recursivamente a la herramienta en un bucle infinito hasta alcanzar el límite de iteraciones, lo que resulta en un fallo silencioso visible como `"No response"`.
+**Regla**:
+1. **Desenvolvimiento Directo**: La propiedad `response` de `functionResponse` debe recibir el resultado de la función (`functionResult`) de forma directa y plana, sin envolverlo en campos auxiliares como `name` o `content`.
+2. **Cumplimiento de Objeto JSON**: Dado que Gemini exige que `response` sea un objeto y no un arreglo, si una herramienta retorna un arreglo plano (como la lista de propiedades filtradas en `buscar_propiedades`), el backend debe encapsularlo dentro de un objeto JSON con una propiedad descriptiva (ej. `{ properties: functionResult }`) antes de enviarlo a la API de Gemini, previniendo errores de validación de esquema en la API.
+
+---
+
+### Regla #91: Mapeo de Agentes en Tabla de Propiedades (listing_agent_id)
+**Contexto**: En la base de datos de Alveo, la columna que identifica al agente asignado en la tabla de propiedades se llama `listing_agent_id`. Intentar consultar `assigned_agent_id` directamente de la tabla `properties` arrojará un error silencioso de Postgres ("column properties.assigned_agent_id does not exist") en las Edge Functions, lo cual bloqueará la herramienta `registrar_solicitud_visita` y causará respuestas vacías de `"No response"`.
+**Regla**:
+1. **Consulta Correcta de Columna**: Al consultar el agente de un inmueble en Supabase Edge Functions, se debe seleccionar estrictamente la columna `listing_agent_id` de la tabla `properties`.
+2. **Mapeo a la Agenda**: Al insertar o asociar esta información a la tabla `budget_requests` (donde la columna sí se llama `assigned_agent_id`), se debe realizar el mapeo de forma explícita: `assigned_agent_id: property.listing_agent_id || null`.
+3. **Conversión Defensiva de Tipos**: Las referencias a propiedades enviadas por la API de Gemini (como `propertyRef`) pueden ser transmitidas como strings. El backend debe parsear defensivamente este argumento como entero (`parseInt`) antes de realizar la consulta en base de datos para evitar discrepancias de tipo en Postgres.
+
+---
+
+### Regla #92: Discriminación de Citas Locales vs Leads de IA sin Correo (Leads vs Local Appointments)
+**Contexto**: Para satisfacer el constraint `NOT NULL` de `client_email` en la tabla `budget_requests`, el sistema utiliza correos electrónicos ficticios terminados en `@local`. Si el asistente de IA o el backend utiliza la misma dirección de correo genérica que las citas locales de agenda (`'agenda@local'`), la lógica de consulta del CRM excluirá erróneamente estos leads reales (como los registrados por Ava), haciéndolos invisibles en la lista de Leads.
+**Regla**:
+1. **Diferenciación de Placeholders**:
+   * Las citas manuales creadas en el calendario que no corresponden a un prospecto previo deben utilizar `'agenda@local'`.
+   * Los leads reales registrados por el asistente de IA (Ava) u otras integraciones donde el cliente no proporcione un correo deben utilizar estrictamente `'no-email@local'` (o cualquier placeholder distinto a `'agenda@local'`).
+2. **Presentación de UI Premium**: En las interfaces administrativas (como `AdminLeadsScreen` u otras vistas del CRM), los correos que terminen en `@local` deben ocultarse o formatearse de manera elegante mostrando un guión (`—`) o una cadena vacía en lugar del placeholder técnico, garantizando una estética limpia y profesional.
+3. **Mantenimiento del Filtro**: Las consultas del CRM que busquen prospectos reales deben seguir filtrando únicamente mediante `.neq('client_email', 'agenda@local')`, asegurando que los leads híbridos (reales pero sin correo) sigan apareciendo.
+
+---
+
+### Regla #93: Protocolo de Colisiones de Agenda en el Asistente Virtual (Calendar Scheduling Conflict Resolution)
+**Contexto**: El flujo de agendamiento conversacional del Asistente Virtual (Ava) debe prevenir solapamientos horarias antes de registrar una nueva cita en Supabase, garantizando que un mismo inmueble o un mismo agente no tengan múltiples citas confirmadas simultáneamente.
+**Regla**:
+1. **Validación de Conflicto en Nivel de Tool**: La herramienta `registrar_solicitud_visita` debe verificar de forma atómica si ya existe una cita en estado `'confirmed'` en el mismo `appointment_date` y `appointment_time` que coincida con el ID del inmueble seleccionado o con el `assigned_agent_id` del captador de la propiedad.
+2. **Respuesta en Caliente ante Colisiones**: En caso de conflicto de disponibilidad, el backend debe cancelar la operación de inserción y retornar un objeto de fallo estructurado `{ success: false, conflict: true, message: "..." }`.
+3. **Flujo Conversacional de Mitigación**: El LLM (Ava) debe interpretar la señal de conflicto del tool de forma amigable e informar con cortesía al cliente que la hora seleccionada ya está reservada para ese inmueble/agente, guiándolo de forma interactiva a elegir un horario alternativo.
+
+---
+
+### Regla #94: Navegación Dinámica por Pestañas para Selectores Jerárquicos en Móvil (Dynamic Hierarchical Tabs)
+**Contexto**: Las pantallas con flujos jerárquicos multicolumna (como el Gestor de Ubicaciones: País -> Estado -> Ciudad) resultan inmanejables en pantallas móviles si se colocan lado a lado (squeezed) o en scroll horizontal infinito, ya que el usuario pierde visibilidad de la relación de dependencias y de las opciones cargadas.
+**Regla**:
+1. **Pestañas Adaptativas (TabBar/TabBarView)**: En dispositivos móviles (`isMobile`), se debe convertir la vista multicolumna en un contenedor controlado por un `TabController` con tres pestañas correspondientes al flujo jerárquico.
+2. **Transición Táctil Asistida**: Al seleccionar un elemento padre (ej: un País), la aplicación debe actualizar el estado y disparar inmediatamente una animación suave del TabController (`_tabController.animateTo(nextIndex)`) para guiar al usuario directamente a la siguiente columna jerárquica (Estados), reduciendo la fricción.
+3. **Placeholders de Estado**: Las pestañas de categorías dependientes deben renderizar un placeholder visual elegante con iconos descriptivos y leyendas instructivas claras (ej: "Selecciona un país primero") si el elemento padre requerido aún no ha sido seleccionado.
+4. **Preservación Desktop**: Mantener siempre intacto el diseño clásico de tres columnas lado a lado en pantallas grandes para máxima productividad de oficina.
+
+---
+
+### Regla #95: Desestructuración de ListTile Semicolumnar para Listas en Móvil (ListTile Mobile Column Deconstruction)
+**Contexto**: El widget `ListTile` es rígido. Cuando un listado administrativo requiere incluir múltiples metadatos, insignias de origen y acciones de edición en el `trailing` (como la bandeja de Leads/Solicitudes), el espacio horizontal disponible en móvil se agota. Esto provoca que los nombres de clientes y descripciones de inmuebles se trunquen agresivamente tras pocos caracteres, arruinando la legibilidad operativa.
+**Regla**:
+1. **Deconstrucción Móvil**: En pantallas móviles, evitar el uso de `ListTile` con widgets `trailing` anchos de tipo `Row` (como insignia de estado + botón eliminar).
+2. **Estructura en Columna Apilada**: En su lugar, el `Card` debe reestructurarse usando una columna (`Column`) que distribuya la información en filas dedicadas de ancho completo:
+   * **Fila Superior**: Avatar, nombre del cliente (con amplio espacio horizontal) y botón eliminar en la esquina derecha.
+   * **Fila Media**: Descripción de la propiedad con soporte multilinea completo (máximo 2 líneas, sin truncado prematuro).
+   * **Fila Inferior**: Insignias (badges) de origen y agente alineados a la izquierda, y estado administrativo a la derecha.
+3. **Preservación Desktop**: En pantallas grandes, continuar renderizando la fila horizontal compacta tradicional (`ListTile`) para conservar alta densidad visual.
+
+---
+
+### Regla #96: Interceptación Local y Visualización Modal de Enlaces de Inmuebles en Chats (AI Link Modal Interception)
+**Contexto**: Cuando el Asistente de IA (Ava) recomienda una propiedad en el chat, presenta un enlace del tipo `/refXXX`. Si el visitante hace clic en él y el sistema navega fuera del chat o recarga la página, se pierde el historial de la conversación actual y se interrumpe drásticamente el embudo de conversión del cliente.
+**Regla**:
+1. **Interceptación de Enlaces de Propiedades**: En la capa del chat de IA (`ChatMessageBubble` en `onTapLink`), toda URL o referencia que contenga la cadena `/refXXX` (verificado analizando la ruta y el fragmento hash para entornos locales) debe ser interceptada.
+2. **Carga y Modal Nativo Directo**:
+   * En vez de redirigir la ruta o abrir pestañas externas, se debe mostrar una pantalla o spinner de carga fullscreen inmediato para evitar clics dobles.
+   * Consultar la propiedad a Supabase a través del servicio local de forma asíncrona.
+   * Cerrar el indicador de carga y abrir de inmediato la ventana modal del visualizador multimedia existente del proyecto (**`PhotoGalleryDialog`**).
+3. **Retorno Seguro**: Al cerrar el modal multimedia, el usuario debe quedar exactamente en la misma pantalla del chat interactivo con Ava, asegurando continuidad en la experiencia y reteniendo al prospecto.
+
+---
+
+### Regla #97: Sincronización Obligatoria con GitHub en Despliegues
+**Contexto**: El control de versiones permite auditar qué código está distribuido en producción en cada momento. Realizar despliegues de frontend (en Vercel) o backend (Supabase Edge Functions) sin consolidar el código correspondiente en el repositorio remoto de GitHub puede generar discrepancias insalvables y desalineaciones de código.
+**Regla**:
+1. **Sincronización Atómica**: Cada vez que el agente o programador ejecute un comando de despliegue (`deploy`) a producción, hosting o CDN (como Vercel o Supabase Edge Functions), se DEBE realizar inmediatamente y de forma atómica un commit y push (summit) con los cambios de código fuente correspondientes a GitHub.
+2. **Registro de Consistencia**: Ningún despliegue se considera completado hasta que la versión del repositorio remoto esté perfectamente sincronizada.
+

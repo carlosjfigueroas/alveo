@@ -23,6 +23,8 @@ class Company {
   final bool showCarousel;
   final bool showReferralMenu;
   final bool showOrganicAffiliate;
+  final bool hasAiAgent;
+  final String aiModel;
   // Subscription fields
   final String subscriptionStatus;
   final DateTime? trialEndsAt;
@@ -90,6 +92,8 @@ class Company {
     this.showCarousel = true,
     this.showReferralMenu = true,
     this.showOrganicAffiliate = true,
+    this.hasAiAgent = true,
+    this.aiModel = 'gemini-flash-latest',
     this.subscriptionStatus = 'trial',
     this.trialEndsAt,
     this.subscriptionStartsAt,
@@ -184,6 +188,8 @@ class Company {
       showCarousel: json['show_carousel'] as bool? ?? true,
       showReferralMenu: json['show_referral_menu'] as bool? ?? true,
       showOrganicAffiliate: json['show_organic_affiliate'] as bool? ?? true,
+      hasAiAgent: json['has_ai_agent'] as bool? ?? true,
+      aiModel: json['ai_model'] as String? ?? 'gemini-flash-latest',
       subscriptionStatus: json['subscription_status'] as String? ?? 'trial',
       trialEndsAt: json['trial_ends_at'] != null ? DateTime.parse(json['trial_ends_at']) : null,
       subscriptionStartsAt: json['subscription_starts_at'] != null ? DateTime.parse(json['subscription_starts_at']) : null,
@@ -247,6 +253,8 @@ class Company {
       'show_carousel': showCarousel,
       'show_referral_menu': showReferralMenu,
       'show_organic_affiliate': showOrganicAffiliate,
+      'has_ai_agent': hasAiAgent,
+      'ai_model': aiModel,
       'subscription_status': subscriptionStatus,
       'trial_ends_at': trialEndsAt?.toIso8601String(),
       'subscription_starts_at': subscriptionStartsAt?.toIso8601String(),
@@ -303,6 +311,8 @@ class Company {
     showCarousel: true,
     showReferralMenu: true,
     showOrganicAffiliate: true,
+    hasAiAgent: true,
+    aiModel: 'gemini-flash-latest',
     carouselStrategy: 'manual',
     carouselAnimation: 'slide',
     defaultManagementPct: 5.0,
@@ -340,6 +350,8 @@ class Company {
     bool? showCarousel,
     bool? showReferralMenu,
     bool? showOrganicAffiliate,
+    bool? hasAiAgent,
+    String? aiModel,
     String? subscriptionStatus,
     Object? trialEndsAt = _sentinel,
     Object? subscriptionStartsAt = _sentinel,
@@ -401,6 +413,8 @@ class Company {
       showCarousel: showCarousel ?? this.showCarousel,
       showReferralMenu: showReferralMenu ?? this.showReferralMenu,
       showOrganicAffiliate: showOrganicAffiliate ?? this.showOrganicAffiliate,
+      hasAiAgent: hasAiAgent ?? this.hasAiAgent,
+      aiModel: aiModel ?? this.aiModel,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       trialEndsAt: trialEndsAt == _sentinel ? this.trialEndsAt : trialEndsAt as DateTime?,
       subscriptionStartsAt: subscriptionStartsAt == _sentinel ? this.subscriptionStartsAt : subscriptionStartsAt as DateTime?,

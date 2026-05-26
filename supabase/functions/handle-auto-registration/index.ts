@@ -84,7 +84,9 @@ serve(async (req) => {
         show_referral_menu: false,
         show_organic_affiliate: false,
         max_properties: maxProps,
-        max_photos_per_property: maxPhotos
+        max_photos_per_property: maxPhotos,
+        ai_model: 'mock-test',
+        has_ai_agent: true
       })
       .select()
       .single();

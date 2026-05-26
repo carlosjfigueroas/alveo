@@ -23,15 +23,25 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedStatusFilter = 'all';
 
   List<Map<String, dynamic>> get _filteredLeads {
-    if (_searchQuery.isEmpty) return _leads;
-    final q = _searchQuery.toLowerCase();
     return _leads.where((lead) {
-      final name = (lead['client_name'] ?? '').toString().toLowerCase();
-      final email = (lead['client_email'] ?? '').toString().toLowerCase();
-      final phone = (lead['phone'] ?? '').toString().toLowerCase();
-      return name.contains(q) || email.contains(q) || phone.contains(q);
+      // 1. Status Filter
+      if (_selectedStatusFilter != 'all') {
+        final status = lead['status'] ?? 'pending';
+        if (status != _selectedStatusFilter) return false;
+      }
+      
+      // 2. Search Query Filter
+      if (_searchQuery.isNotEmpty) {
+        final q = _searchQuery.toLowerCase();
+        final name = (lead['client_name'] ?? '').toString().toLowerCase();
+        final email = (lead['client_email'] ?? '').toString().toLowerCase();
+        final phone = (lead['phone'] ?? '').toString().toLowerCase();
+        return name.contains(q) || email.contains(q) || phone.contains(q);
+      }
+      return true;
     }).toList();
   }
 
@@ -62,7 +72,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         return bTime.compareTo(aTime);
       });
       final props = await _service.getAllProperties(companyId);
-      final titles = {for (var p in props) p.id: p.title};
+      final titles = {
+        for (var p in props)
+          p.id: p.refNumber != null
+              ? 'Ref. ${p.refNumber.toString().padLeft(3, '0')} - ${p.title}'
+              : p.title
+      };
       final agents = await _service.getCompanyUsers(companyId);
       final agentNames = {for (var a in agents) a['id'].toString(): a['full_name'].toString()};
 
@@ -89,23 +104,80 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   Color _statusColor(String status) {
     switch (status) {
       case 'responded':
-        return Colors.green;
+        return const Color(0xFF10B981); // beautiful emerald green
       case 'rejected':
-        return Colors.red;
+        return const Color(0xFFEF4444); // beautiful red
       default:
-        return Colors.orange;
+        return const Color(0xFFF59E0B); // beautiful amber/orange
     }
   }
 
   IconData _statusIcon(String status) {
     switch (status) {
       case 'responded':
-        return Icons.check_circle;
+        return Icons.check;
       case 'rejected':
-        return Icons.cancel;
+        return Icons.close;
       default:
-        return Icons.pending;
+        return Icons.more_horiz;
     }
+  }
+
+  /// Returns the visual color, icon, and label for a given lead source value.
+  /// Follows Regla #92 (source discriminator) and Regla #5 (premium aesthetics).
+  ({Color color, Color bgColor, IconData icon, String label}) _sourceStyle(String? source, AppLocalizations l10n) {
+    switch (source) {
+      case 'ava':
+        return (
+          color: const Color(0xFF7C3AED), // HSL violet — AI/Ava brand
+          bgColor: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+          icon: Icons.auto_awesome,
+          label: l10n.get('source_ava') ?? 'Agente IA',
+        );
+      case 'manual':
+        return (
+          color: const Color(0xFF0369A1), // HSL sky blue — manual/calendar
+          bgColor: const Color(0xFF0369A1).withValues(alpha: 0.12),
+          icon: Icons.calendar_today,
+          label: l10n.get('source_manual') ?? 'Manual',
+        );
+      case 'web':
+      default:
+        return (
+          color: const Color(0xFF059669), // HSL emerald — organic web
+          bgColor: const Color(0xFF059669).withValues(alpha: 0.12),
+          icon: Icons.language,
+          label: l10n.get('source_web') ?? 'Web',
+        );
+    }
+  }
+
+  /// Premium source badge widget (Regla #5 — premium aesthetics).
+  Widget _buildSourceBadge(String? source, AppLocalizations l10n) {
+    final style = _sourceStyle(source, l10n);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: style.bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: style.color.withValues(alpha: 0.4), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(style.icon, size: 11, color: style.color),
+          const SizedBox(width: 4),
+          Text(
+            style.label,
+            style: TextStyle(
+              color: style.color,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showDetail(Map<String, dynamic> lead) async {
@@ -136,6 +208,11 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               _detailRow(Icons.phone, l10n.get('phone'), lead['phone'] ?? '—'),
               _detailRow(Icons.calendar_today, l10n.get('leads_date'), sentAt),
               _detailRow(Icons.flag, l10n.get('status_field'), l10n.get('leads_status_$status')),
+              _detailRow(
+                Icons.campaign_outlined,
+                l10n.get('lead_source') ?? 'Origen del Lead',
+                _sourceStyle(lead['source'], l10n).label,
+              ),
               if (lead['notes'] != null && lead['notes'].toString().isNotEmpty)
                 _detailRow(Icons.notes, l10n.get('additional_notes'), lead['notes']),
               if (propertyList != null && propertyList is List && propertyList.isNotEmpty)
@@ -322,25 +399,54 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: l10n.get('search_leads'),
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
-                  suffixIcon: _searchQuery.isNotEmpty 
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: 400,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: l10n.get('search_leads'),
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
+                      suffixIcon: _searchQuery.isNotEmpty 
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                  ),
                 ),
-                onChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: 400,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip('all', l10n.get('filter_all') ?? 'Todos'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('pending', l10n.get('leads_status_pending') ?? 'Pendiente'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('responded', l10n.get('leads_status_responded') ?? 'Respondida'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('rejected', l10n.get('leads_status_rejected') ?? 'Rechazada'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -365,6 +471,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                           itemBuilder: (context, index) {
                             final lead = _filteredLeads[index];
                             final status = lead['status'] ?? 'pending';
+                            final source = lead['source'] ?? 'web';
+                            final email = lead['client_email'] ?? '';
+                            final showEmail = email.isNotEmpty && !email.toString().endsWith('@local');
+                            final propertyList = lead['property_list'];
+                            final hasProperty = propertyList != null && propertyList is List && propertyList.isNotEmpty;
+                            
                             final sentAt = lead['sent_at'] != null
                                 ? (DateTime.tryParse(lead['sent_at'].toString())?.toLocal().toString().substring(0, 16) ?? '')
                                 : '';
@@ -373,8 +485,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: _statusColor(status).withValues(alpha: 0.15),
-                                  child: Icon(_statusIcon(status), color: _statusColor(status)),
+                                  backgroundColor: _statusColor(status),
+                                  child: Icon(_statusIcon(status), color: Colors.white),
                                 ),
                                 title: Text(
                                   lead['client_name'] ?? l10n.get('leads_no_name'),
@@ -383,16 +495,37 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(lead['client_email'] ?? ''),
-                                    Row(
-                                      children: [
-                                        Text(sentAt, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                                        if (lead['assigned_agent_id'] != null) ...[
-                                          const SizedBox(width: 8),
-                                          const Text('•', style: TextStyle(color: Colors.grey)),
-                                          const SizedBox(width: 8),
-                                          Icon(Icons.person, size: 12, color: Colors.blue.shade300),
+                                    if (showEmail) ...[
+                                      const SizedBox(height: 2),
+                                      Text(email),
+                                    ],
+                                    if (hasProperty) ...[
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.business, size: 14, color: Colors.grey),
                                           const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              _propertyTitles[propertyList.first] ?? propertyList.first.toString(),
+                                              style: const TextStyle(color: Colors.grey),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    const SizedBox(height: 6),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      children: [
+                                        _buildSourceBadge(source, l10n),
+                                        if (lead['assigned_agent_id'] != null) ...[
+                                          const Text('•', style: TextStyle(color: Colors.grey)),
+                                          Icon(Icons.person, size: 12, color: Colors.blue.shade300),
                                           Text(
                                             _agentNames[lead['assigned_agent_id']] ?? '',
                                             style: TextStyle(fontSize: 12, color: Colors.blue.shade300, fontWeight: FontWeight.bold),
@@ -400,6 +533,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                         ],
                                       ],
                                     ),
+                                    const SizedBox(height: 4),
+                                    Text(sentAt, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                   ],
                                 ),
                                 trailing: Row(
@@ -441,6 +576,32 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFilterChip(String value, String label) {
+    final isSelected = _selectedStatusFilter == value;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: const Color(0xFF003366),
+      checkmarkColor: Colors.white,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: isSelected ? const Color(0xFF003366) : Colors.grey.shade300),
+      ),
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _selectedStatusFilter = value;
+          });
+        }
+      },
     );
   }
 }

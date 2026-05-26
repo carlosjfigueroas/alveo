@@ -32,6 +32,8 @@ import 'register_screen.dart';
 import '../services/visitor_service.dart';
 import '../widgets/visitor_badge.dart';
 import '../widgets/contact_dialog.dart';
+import '../widgets/ai_chat_fab.dart';
+import 'ai_chat_screen.dart';
 
 enum PropertySortOption { newest, priceAsc, priceDesc, mostLiked }
 
@@ -904,6 +906,12 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: Scaffold(
             drawer: isMobile ? const MainDrawer() : null,
+            floatingActionButton: companyProv.currentCompany.hasAiAgent
+                ? AiChatFab(
+                    onPressed: () => AiChatScreen.show(context),
+                  )
+                : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
             appBar: AppBar(
               automaticallyImplyLeading: false,
               centerTitle: true,

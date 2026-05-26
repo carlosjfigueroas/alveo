@@ -59,6 +59,8 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
   String _carouselAnimation = 'slide';
   bool _showReferralMenu = true;
   bool _showOrganicAffiliate = true;
+  bool _hasAiAgent = true;
+  String _aiModel = 'gemini-flash-latest';
   String _acquisitionChannel = 'organic';
   String _referredAlias = '';
   String _referralEmail = '';
@@ -117,6 +119,8 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
     _carouselAnimation = company.carouselAnimation;
     _showReferralMenu = company.showReferralMenu;
     _showOrganicAffiliate = company.showOrganicAffiliate;
+    _hasAiAgent = company.hasAiAgent;
+    _aiModel = company.aiModel;
     _acquisitionChannel = company.acquisitionChannel;
     _referredAlias = company.referredBySalesperson ?? '';
     _referralEmail = company.referralEmailEntered ?? '';
@@ -238,6 +242,8 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
         carouselAnimation: _carouselAnimation,
         showReferralMenu: _showReferralMenu,
         showOrganicAffiliate: _showOrganicAffiliate,
+        hasAiAgent: _hasAiAgent,
+        aiModel: _aiModel,
         acquisitionChannel: _acquisitionChannel,
         referredBySalesperson: _nullIfEmpty(_referredAlias),
         referralEmailEntered: _nullIfEmpty(_referralEmail),
@@ -281,6 +287,8 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
           _carouselAnimation = freshCompany.carouselAnimation;
           _showReferralMenu = freshCompany.showReferralMenu;
           _showOrganicAffiliate = freshCompany.showOrganicAffiliate;
+          _hasAiAgent = freshCompany.hasAiAgent;
+          _aiModel = freshCompany.aiModel;
           _acquisitionChannel = freshCompany.acquisitionChannel;
           _referredAlias = freshCompany.referredBySalesperson ?? '';
           _referralEmail = freshCompany.referralEmailEntered ?? '';
@@ -403,6 +411,44 @@ class _AdminCompanySettingsState extends State<AdminCompanySettings> {
                       onChanged: (v) => setState(() => _showOrganicAffiliate = v),
                       activeColor: Colors.purple,
                     ),
+                    const Divider(height: 48),
+                    _buildSectionHeader(l10n.get('ava_title'), Icons.auto_awesome),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: Text(isSpanish ? 'Activar Ava (Asistente IA)' : 'Enable Ava (AI Assistant)'),
+                      subtitle: Text(isSpanish 
+                        ? 'Permite a los clientes chatear con Ava y buscar propiedades mediante texto o notas de voz.' 
+                        : 'Allows clients to chat with Ava and search properties via text or voice notes.'),
+                      value: _hasAiAgent,
+                      onChanged: (v) => setState(() => _hasAiAgent = v),
+                      activeColor: AppThemes.primaryGreen,
+                    ),
+                    if (_hasAiAgent) ...[
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: DropdownButtonFormField<String>(
+                          value: _aiModel,
+                          decoration: InputDecoration(
+                            labelText: isSpanish ? 'Modelo del Agente IA' : 'AI Agent Model',
+                            filled: true,
+                            fillColor: Theme.of(context).cardColor,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          ),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'gemini-flash-latest',
+                              child: Text(isSpanish ? 'Gemini Flash (Producción / En Vivo)' : 'Gemini Flash (Production / Live)'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'mock-test',
+                              child: Text(isSpanish ? 'Simulador de Pruebas (Ilimitado / Gratis)' : 'Test Simulator (Unlimited / Free)'),
+                            ),
+                          ],
+                          onChanged: (v) => setState(() => _aiModel = v!),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     // Conteo & Acquisition (ONLY FOR SUPER ADMIN)
                     if (isSuperAdmin) ...[

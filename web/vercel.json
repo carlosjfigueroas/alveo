@@ -1,0 +1,11 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "^/(ref.*)$", "dest": "/" },
+    { "src": "^/agent/(.*)$", "dest": "/" },
+    { "src": "^/register$", "dest": "/" },
+    { "src": "^/login$", "dest": "/" }
+  ]
+}

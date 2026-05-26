@@ -1,10 +1,11 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "^/(ref.*)$", "dest": "/" },
+    { "src": "^/agent/(.*)$", "dest": "/" },
+    { "src": "^/register$", "dest": "/" },
+    { "src": "^/login$", "dest": "/" }
   ]
 }
