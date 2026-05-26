@@ -399,8 +399,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
+              child: Center(
                 child: SizedBox(
                   width: 400,
                   child: TextField(
@@ -428,23 +427,20 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
+              child: Center(
                 child: SizedBox(
                   width: 400,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildFilterChip('all', l10n.get('filter_all') ?? 'Todos'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('pending', l10n.get('leads_status_pending') ?? 'Pendiente'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('responded', l10n.get('leads_status_responded') ?? 'Respondida'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('rejected', l10n.get('leads_status_rejected') ?? 'Rechazada'),
-                      ],
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFilterChip('all', l10n.get('filter_all') ?? 'Todos'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('pending', l10n.get('leads_status_pending') ?? 'Pendiente'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('responded', l10n.get('leads_status_responded') ?? 'Respondida'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('rejected', l10n.get('leads_status_rejected') ?? 'Rechazada'),
+                    ],
                   ),
                 ),
               ),
