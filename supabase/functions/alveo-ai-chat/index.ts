@@ -351,7 +351,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
     // 1. Find the property by its ref_number to get its UUID and listing_agent_id (can use public supabaseClient or admin)
     const { data: property, error: propError } = await supabaseClient
       .from('properties')
-      .select('id, title, listing_agent_id')
+      .select('id, title, type, operation_type, price, listing_agent_id')
       .eq('company_id', company_id)
       .eq('ref_number', refNum)
       .single();
@@ -459,6 +459,12 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
           phone: args.phone,
           notes: args.notes || 'Registrado automáticamente por la Asistente de IA Ava.',
           propertyIds: propertyList,
+          propertyDetails: [{
+            title: `Ref: ${String(refNum).padStart(3, '0')} - ${property.title}`,
+            type: property.type || 'Inmueble',
+            operation: property.operation_type || '',
+            price: property.price || null
+          }],
           locale: locale || 'es',
           companyEmail: company?.contact_email || null,
           companyName: company?.name || 'Alveo Real Estate',
@@ -723,7 +729,7 @@ async function triggerUpdateEmail(
     if (Array.isArray(propertyList) && propertyList.length > 0) {
       const { data: prop } = await supabaseAdmin
         .from('properties')
-        .select('title, ref_number')
+        .select('title, ref_number, type, operation_type, price')
         .eq('id', propertyList[0])
         .single();
       if (prop) {
@@ -751,6 +757,12 @@ async function triggerUpdateEmail(
         phone: request.phone,
         notes: request.notes || '',
         propertyIds: propertyList,
+        propertyDetails: propTitle !== 'Inmueble Alveo' ? [{
+          title: propTitle,
+          type: 'Inmueble',
+          operation: '',
+          price: null
+        }] : undefined,
         locale: locale || 'es',
         companyEmail: company?.contact_email || null,
         companyName: company?.name || 'Alveo Real Estate',

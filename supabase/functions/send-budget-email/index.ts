@@ -51,7 +51,7 @@ serve(async (req) => {
     }
 
     // Fallback if prop not found
-    const propTitle = prop ? prop.title : (propertyIds ? propertyIds.join(', ') : t.propUnknown)
+    const propTitle = prop ? prop.title : t.propUnknown
     const propPrice = prop ? `$${prop.price}` : t.consult
     const propOperation = prop ? prop.operation : t.na;
 
