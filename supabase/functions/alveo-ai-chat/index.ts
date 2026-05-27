@@ -491,7 +491,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
 
     const { data: allVisits, error } = await supabaseAdmin
       .from('budget_requests')
-      .select('id, client_name, phone, client_email, appointment_date, appointment_time, appointment_status, status, is_appointment, property_list, assigned_agent_id, notes, created_at')
+      .select('id, client_name, phone, client_email, appointment_date, appointment_time, appointment_status, status, is_appointment, property_list, assigned_agent_id, notes, sent_at')
       .eq('company_id', company_id);
 
     if (error) return { error: error.message };
@@ -502,10 +502,10 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       return dbDigits === searchDigits || dbDigits.endsWith(searchDigits) || searchDigits.endsWith(dbDigits);
     });
 
-    // Sort visits newest first based on created_at
+    // Sort visits newest first based on sent_at
     visits.sort((a: any, b: any) => {
-      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      const aTime = a.sent_at ? new Date(a.sent_at).getTime() : 0;
+      const bTime = b.sent_at ? new Date(b.sent_at).getTime() : 0;
       return bTime - aTime;
     });
 
@@ -572,7 +572,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
     // Find the most recent active budget_request for this phone/name
     const { data: allReqs, error: reqError } = await supabaseAdmin
       .from('budget_requests')
-      .select('id, appointment_date, appointment_time, appointment_status, property_list, assigned_agent_id, status, client_name, client_email, phone, notes, created_at')
+      .select('id, appointment_date, appointment_time, appointment_status, property_list, assigned_agent_id, status, client_name, client_email, phone, notes, sent_at')
       .eq('company_id', company_id)
       .in('status', ['pending', 'responded']);
 
@@ -584,10 +584,10 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       return dbDigits === searchDigits || dbDigits.endsWith(searchDigits) || searchDigits.endsWith(dbDigits);
     });
 
-    // Sort requests newest first based on created_at
+    // Sort requests newest first based on sent_at
     requests.sort((a: any, b: any) => {
-      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      const aTime = a.sent_at ? new Date(a.sent_at).getTime() : 0;
+      const bTime = b.sent_at ? new Date(b.sent_at).getTime() : 0;
       return bTime - aTime;
     });
 
