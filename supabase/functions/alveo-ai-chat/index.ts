@@ -172,7 +172,7 @@ const tools = [
             },
             action: {
               type: "STRING",
-              description: "Acción a realizar: 'cancel' para cancelar la cita, 'reschedule' para cambiar fecha/hora, 'confirm' para confirmar la cita."
+              description: "Acción a realizar: 'cancel' para cancelar la cita, 'reschedule' para cambiar fecha/hora, 'confirm' para confirmar la cita, 'done' para finalizar/marcar como realizada la cita."
             },
             newDate: {
               type: "STRING",
@@ -184,6 +184,20 @@ const tools = [
             }
           },
           required: ["clientName", "phone", "action"]
+        }
+      },
+      {
+        name: "consultar_visitas_cliente",
+        description: "Busca citas de visitas activas (pendientes, confirmadas o realizadas) registradas en el CRM o Agenda usando el número de teléfono del cliente.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            phone: {
+              type: "STRING",
+              description: "Número de teléfono del cliente usado al agendar"
+            }
+          },
+          required: ["phone"]
         }
       }
     ]
@@ -353,29 +367,33 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
         ? (args.appointmentTime.split(':').length === 2 ? `${args.appointmentTime}:00` : args.appointmentTime)
         : args.appointmentTime;
 
-      // Must use supabaseAdmin here because public users cannot SELECT from budget_requests
-      const { data: existingAppts, error: checkError } = await supabaseAdmin
+      // Fetch all confirmed appointments of that day for this agent or property to build busy slots list
+      const { data: dayAppts, error: checkError } = await supabaseAdmin
         .from('budget_requests')
-        .select('id, property_list, assigned_agent_id')
+        .select('appointment_time, property_list, assigned_agent_id')
         .eq('company_id', company_id)
         .eq('appointment_date', args.appointmentDate)
-        .eq('appointment_time', formattedTime)
-        .eq('appointment_status', 'confirmed'); // Only conflict if it is already officially confirmed!
+        .eq('appointment_status', 'confirmed');
 
-      if (!checkError && existingAppts && existingAppts.length > 0) {
-        const hasConflict = existingAppts.some((appt: any) => {
+      const busyTimes: string[] = [];
+      if (!checkError && dayAppts) {
+        for (const appt of dayAppts) {
           const matchesAgent = property.listing_agent_id && appt.assigned_agent_id === property.listing_agent_id;
           const matchesProperty = Array.isArray(appt.property_list) && appt.property_list.includes(property.id);
-          return matchesAgent || matchesProperty;
-        });
-
-        if (hasConflict) {
-          return { 
-            success: false, 
-            conflict: true,
-            message: `Conflicto de horario: El bloque del ${args.appointmentDate} a las ${args.appointmentTime} ya tiene una cita confirmada para este agente o propiedad. Por favor, infórmale amablemente al cliente que ese horario ya está reservado y sugiérele buscar otra hora u otro día.`
-          };
+          if (matchesAgent || matchesProperty) {
+            const t = appt.appointment_time?.substring(0, 5);
+            if (t) busyTimes.push(t);
+          }
         }
+      }
+
+      if (busyTimes.includes(formattedTime.substring(0, 5))) {
+        return { 
+          success: false, 
+          conflict: true,
+          busy_hours: busyTimes,
+          message: `Conflicto de horario: El bloque del ${args.appointmentDate} a las ${args.appointmentTime} ya tiene una cita confirmada para este agente o propiedad. Las siguientes horas del mismo día ya están ocupadas: ${busyTimes.join(', ')}. Por favor, infórmale amablemente al cliente que ese horario ya está reservado y sugiérele proactivamente horarios alternativos libres en el mismo día.`
+        };
       }
     }
 
@@ -387,10 +405,10 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       company_id: company_id,
       client_name: args.clientName,
       phone: args.phone,
-      client_email: args.clientEmail || 'no-email@local', // Constraint de la tabla budget_requests para la app (usamos 'no-email@local' para no filtrarlo como cita de agenda pura)
+      client_email: args.clientEmail || 'no-email@local', // Constraint de la tabla budget_requests para la app
       property_list: propertyList,
       notes: args.notes || 'Registrado automáticamente por la Asistente de IA Ava.',
-      status: 'pending', // lowercase pending for the CRM screen
+      status: (args.appointmentDate || args.appointmentTime) ? 'responded' : 'pending', // Set status to responded immediately when appointment is created!
       is_appointment: !!(args.appointmentDate || args.appointmentTime),
       assigned_agent_id: property.listing_agent_id || null,
       source: 'ava'
@@ -462,6 +480,71 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
     };
   }
 
+  if (functionCall.name === 'consultar_visitas_cliente') {
+    const args = functionCall.args || {};
+    if (!args.phone) return { error: "Falta phone" };
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: visits, error } = await supabaseAdmin
+      .from('budget_requests')
+      .select('id, client_name, phone, client_email, appointment_date, appointment_time, appointment_status, status, is_appointment, property_list, assigned_agent_id, notes')
+      .eq('company_id', company_id)
+      .eq('phone', args.phone)
+      .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+    if (!visits || visits.length === 0) {
+      return { success: false, message: "No se encontraron citas o solicitudes de visitas activas bajo ese número de teléfono." };
+    }
+
+    // Translate property ids to titles and references for Ava
+    const results = [];
+    for (const v of visits) {
+      let propertyInfo = "No especificado";
+      if (Array.isArray(v.property_list) && v.property_list.length > 0) {
+        const { data: prop } = await supabaseAdmin
+          .from('properties')
+          .select('title, ref_number')
+          .eq('id', v.property_list[0])
+          .single();
+        if (prop) {
+          propertyInfo = `Ref: ${String(prop.ref_number).padStart(3, '0')} - ${prop.title}`;
+        }
+      }
+      
+      let agentName = "No asignado";
+      if (v.assigned_agent_id) {
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', v.assigned_agent_id)
+          .single();
+        if (profile) agentName = profile.full_name;
+      }
+
+      results.push({
+        id: v.id,
+        client_name: v.client_name,
+        phone: v.phone,
+        client_email: v.client_email && v.client_email.endsWith('@local') ? '—' : v.client_email,
+        appointment_date: v.appointment_date || '—',
+        appointment_time: v.appointment_time || '—',
+        appointment_status: v.appointment_status || '—',
+        status: v.status,
+        is_appointment: v.is_appointment,
+        property: propertyInfo,
+        agent: agentName,
+        notes: v.notes
+      });
+    }
+
+    return { success: true, visits: results };
+  }
+
   if (functionCall.name === 'modificar_solicitud_visita') {
     const args = functionCall.args || {};
     if (!args.clientName || !args.phone || !args.action) {
@@ -476,7 +559,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
     // Find the most recent active budget_request for this phone/name
     const { data: requests, error: reqError } = await supabaseAdmin
       .from('budget_requests')
-      .select('id, appointment_date, appointment_time, appointment_status, property_list, assigned_agent_id, status')
+      .select('id, appointment_date, appointment_time, appointment_status, property_list, assigned_agent_id, status, client_name, client_email, phone, notes')
       .eq('company_id', company_id)
       .eq('phone', args.phone)
       .in('status', ['pending', 'responded'])
@@ -496,6 +579,10 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
         .eq('id', request.id);
 
       if (updError) return { error: `Error al cancelar: ${updError.message}` };
+      
+      // Trigger notification email to agent
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'cancel', null, null);
+
       return { success: true, message: "Cita y solicitud canceladas con éxito." };
     }
 
@@ -510,7 +597,29 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
         .eq('id', request.id);
 
       if (updError) return { error: `Error al confirmar: ${updError.message}` };
+      
+      // Trigger notification email to agent
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'confirm', null, null);
+
       return { success: true, message: "Cita confirmada con éxito." };
+    }
+
+    if (args.action === 'done') {
+      const { error: updError } = await supabaseAdmin
+        .from('budget_requests')
+        .update({ 
+          status: 'responded', 
+          appointment_status: 'done', 
+          notes: request.notes ? `${request.notes}\nFinalizada / Realizada automáticamente por Ava.` : 'Finalizada / Realizada automáticamente por Ava.'
+        })
+        .eq('id', request.id);
+
+      if (updError) return { error: `Error al marcar como realizada: ${updError.message}` };
+      
+      // Trigger notification email to agent
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'done', null, null);
+
+      return { success: true, message: "Cita marcada como finalizada/realizada con éxito." };
     }
 
     if (args.action === 'reschedule') {
@@ -520,30 +629,34 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
         ? (args.newTime.split(':').length === 2 ? `${args.newTime}:00` : args.newTime)
         : args.newTime;
 
-      // Anti-collision logic
-      const { data: existingAppts, error: checkError } = await supabaseAdmin
+      // Anti-collision logic: fetch confirmed times for that day
+      const { data: dayAppts, error: checkError } = await supabaseAdmin
         .from('budget_requests')
-        .select('id, property_list, assigned_agent_id')
+        .select('appointment_time, property_list, assigned_agent_id')
         .eq('company_id', company_id)
         .eq('appointment_date', args.newDate)
-        .eq('appointment_time', formattedTime)
         .eq('appointment_status', 'confirmed');
 
-      if (!checkError && existingAppts && existingAppts.length > 0) {
-        const hasConflict = existingAppts.some((appt: any) => {
+      const busyTimes: string[] = [];
+      if (!checkError && dayAppts) {
+        for (const appt of dayAppts) {
           const matchesAgent = request.assigned_agent_id && appt.assigned_agent_id === request.assigned_agent_id;
           const matchesProperty = Array.isArray(appt.property_list) && Array.isArray(request.property_list) &&
             appt.property_list.some((pid:any) => request.property_list.includes(pid));
-          return matchesAgent || matchesProperty;
-        });
-
-        if (hasConflict) {
-          return { 
-            success: false, 
-            conflict: true,
-            message: `Conflicto de horario: El bloque del ${args.newDate} a las ${args.newTime} ya está ocupado para esa propiedad/agente. Sugiere otra hora.`
-          };
+          if (matchesAgent || matchesProperty) {
+            const t = appt.appointment_time?.substring(0, 5);
+            if (t) busyTimes.push(t);
+          }
         }
+      }
+
+      if (busyTimes.includes(formattedTime.substring(0, 5))) {
+        return { 
+          success: false, 
+          conflict: true,
+          busy_hours: busyTimes,
+          message: `Conflicto de horario: El bloque del ${args.newDate} a las ${args.newTime} ya está ocupado para esa propiedad/agente. Las siguientes horas de ese día ya están ocupadas: ${busyTimes.join(', ')}. Sugiere proactivamente horarios libres.`
+        };
       }
 
       const { error: updError } = await supabaseAdmin
@@ -552,11 +665,16 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
           appointment_date: args.newDate, 
           appointment_time: formattedTime, 
           appointment_status: 'pending',
+          status: 'responded', // Keep CRM lead as responded
           is_appointment: true
         })
         .eq('id', request.id);
 
       if (updError) return { error: `Error al reprogramar: ${updError.message}` };
+      
+      // Trigger notification email to agent
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'reschedule', args.newDate, formattedTime);
+
       return { success: true, message: "Cita reprogramada con éxito en la nueva fecha y hora." };
     }
 
@@ -564,6 +682,59 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
   }
 
   return { error: 'Unknown function' };
+}
+
+async function triggerUpdateEmail(
+  supabaseAdmin: any, company: any, locale: string, 
+  request: any, updateType: string, newDate: string | null, newTime: string | null
+) {
+  try {
+    let propTitle = "Inmueble Alveo";
+    const propertyList = request.property_list;
+    if (Array.isArray(propertyList) && propertyList.length > 0) {
+      const { data: prop } = await supabaseAdmin
+        .from('properties')
+        .select('title, ref_number')
+        .eq('id', propertyList[0])
+        .single();
+      if (prop) {
+        propTitle = `Ref: ${String(prop.ref_number).padStart(3, '0')} - ${prop.title}`;
+      }
+    }
+
+    let agentEmail = null;
+    if (request.assigned_agent_id) {
+      const { data: agentProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('email')
+        .eq('id', request.assigned_agent_id)
+        .single();
+      if (agentProfile) agentEmail = agentProfile.email;
+    }
+
+    await supabaseAdmin.functions.invoke('send-budget-email', {
+      body: {
+        name: request.client_name,
+        email: request.client_email && request.client_email.endsWith('@local') ? null : request.client_email,
+        phone: request.phone,
+        notes: request.notes || '',
+        propertyIds: propertyList,
+        locale: locale || 'es',
+        companyEmail: company?.email || null,
+        companyName: company?.name || 'Alveo Real Estate',
+        primaryColor: company?.primary_color,
+        secondaryColor: company?.secondary_color,
+        agentEmail: agentEmail,
+        isUpdate: true,
+        updateType: updateType,
+        appointmentDate: newDate || request.appointment_date,
+        appointmentTime: newTime || request.appointment_time
+      }
+    });
+    console.log('Update email notification sent to agent successfully');
+  } catch (e) {
+    console.error('Failed to trigger update email notification:', e);
+  }
 }
 
 serve(async (req) => {
@@ -655,18 +826,42 @@ serve(async (req) => {
       }
 
       // --- APPOINTMENT MODIFICATION INTENT SIMULATOR ---
-      if (/cancelar|reprogramar|cambiar|modificar|confirmar/i.test(textMessage) && (/\d{7,}/.test(textMessage) || /@/.test(textMessage))) {
-        console.log('Simulador: Detectado intento de modificacion/cancelacion/confirmacion en mock-test.');
+      if (/cancelar|reprogramar|cambiar|modificar|confirmar|finalizar|realizada|terminada|done/i.test(textMessage) && (/\d{7,}/.test(textMessage) || /@/.test(textMessage))) {
+        console.log('Simulador: Detectado intento de modificacion/cancelacion/confirmacion/finalizacion en mock-test.');
         
         let action = 'reprogramada';
         if (/cancelar/i.test(textMessage)) action = 'cancelada';
         if (/confirmar/i.test(textMessage)) action = 'confirmada';
+        if (/finalizar|realizada|terminada|done/i.test(textMessage)) action = 'finalizada/realizada';
         
         const modReply = isEn
           ? `I have successfully simulated the modification of your appointment. Status: **${action.toUpperCase()}**.\nNote: This is a simulation.`
           : `He simulado exitosamente la modificación de tu cita. Nuevo estado: **${action.toUpperCase()}**.\nNota: Esta es una simulación.`;
 
         return new Response(JSON.stringify({ reply: modReply }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // --- APPOINTMENT READ INTENT SIMULATOR ---
+      if (/consultar|ver\s*cita|tengo\s*cita|mis\s*citas/i.test(textMessage) && (/\d{7,}/.test(textMessage) || /@/.test(textMessage))) {
+        console.log('Simulador: Detectado intento de consulta en mock-test.');
+        const consultReply = isEn
+          ? `I found 1 active appointment registered under your phone:\n\n` +
+            `* **Client Name:** Cliente Alveo\n` +
+            `* **Property:** Ref. 040 - Villa Linda en Anaco\n` +
+            `* **Date:** 2026-05-30\n` +
+            `* **Time:** 14:30\n` +
+            `* **Status:** CONFIRMED\n\n` +
+            `If you wish to reschedule or cancel it, let me know!`
+          : `He encontrado 1 cita activa registrada bajo tu número de teléfono:\n\n` +
+            `* **Cliente:** Cliente Alveo\n` +
+            `* **Inmueble:** Ref. 040 - Villa Linda en Anaco\n` +
+            `* **Fecha:** 2026-05-30\n` +
+            `* **Hora:** 14:30\n` +
+            `* **Estado:** CONFIRMADA\n\n` +
+            `Si deseas reprogramarla o cancelarla, ¡avísame!`;
+        return new Response(JSON.stringify({ reply: consultReply }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -898,8 +1093,11 @@ Cuando el usuario indique una fecha u hora de interés para una visita, debes in
    - En inglés: "(for example: 05/28/26 or Thursday at 4pm / 11pm)"
    Esto asegura que el usuario comprenda que puede usar formatos tradicionales o lenguaje natural.
 
-MUY IMPORTANTE SOBRE MODIFICACIONES DE CITAS:
-Si el usuario solicita cancelar, reprogramar o confirmar una cita existente, DEBES preguntarle su nombre y el número de teléfono con el que agendó la cita original (si no los ha proporcionado ya en el hilo de la conversación), y luego usar la herramienta 'modificar_solicitud_visita' pasándole esos datos y la acción correspondiente ('cancel', 'reschedule' o 'confirm').
+MUY IMPORTANTE SOBRE GESTIÓN DE CITAS (CRUD):
+1. CONSULTA DE CITAS: Si el usuario te pregunta por sus citas agendadas, debes usar la herramienta 'consultar_visitas_cliente' pasándole su número de teléfono. Esto te permitirá responderle con precisión el inmueble, la fecha, la hora y el estado de su cita.
+2. MODIFICACIONES Y CONFIRMACIONES: Si solicita cancelar, reprogramar o confirmar una cita, primero asegúrate de tener su nombre y teléfono (usando 'consultar_visitas_cliente' para verificar si es necesario), y luego invoca 'modificar_solicitud_visita' pasándole esos datos y la acción ('cancel', 'reschedule' o 'confirm').
+3. FINALIZACIÓN (Agente/Admin): Si el usuario es un agente o administrador y te pide marcar la cita como realizada o finalizada, usa la herramienta 'modificar_solicitud_visita' con la acción 'done'.
+4. MITIGACIÓN DE CONFLICTOS DE HORARIO: Si al agendar o reprogramar el sistema devuelve que el horario está ocupado ('conflict: true'), analiza la lista de 'busy_hours' devuelta para ese día y confiésale amablemente al cliente qué horas están reservadas, sugiriéndole de forma proactiva horarios alternativos libres en el mismo día.
 
 MUY IMPORTANTE SOBRE LOS LINKS Y FOTOS:
 Cuando el usuario te pida "ver fotos", "ver más detalles" o te pregunte por una propiedad, SIEMPRE debes incluir el link público de la propiedad en tu respuesta usando formato Markdown: [Ver fotos y detalles]({public_link}).

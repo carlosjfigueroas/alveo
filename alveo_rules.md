@@ -641,3 +641,21 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
    * **Llamada 1**: Exclusiva para el Cliente/Prospecto (con un mensaje amigable o de confirmación).
      * *Tolerancia a fallos*: Dado que la IA y algunos flujos priorizan la captación del teléfono (ej. para WhatsApp), el correo del prospecto es **opcional**. Si el correo es nulo o inválido, esta llamada se omite silenciosamente sin romper el proceso.
    * **Llamada 2**: Exclusiva para el Agente asignado o el Administrador (con un prefijo claro en el asunto, ej. `[NUEVO LEAD]`, para facilitar filtros internos). Ésta llamada se ejecuta **siempre**, garantizando que el vendedor reciba el lead y el teléfono del contacto.
+
+---
+
+### Regla #101: Consistencia CRM/Agenda en Altas y Bajas (Manual y con Ava)
+**Contexto**: El flujo de trabajo del CRM y el Calendario comparten la misma tabla `budget_requests`. Mantener sincronizados los estados de leads y citas es vital para que las bandejas administrativas reflejen la realidad sin duplicar o perder información.
+**Regla**:
+1. **Creación/Vinculación de Cita**: Al registrar una nueva cita manual desde un lead pendiente, o cuando la IA registra atómicamente una visita con fecha y hora, el estado general (`status`) del lead en el CRM debe actualizarse de inmediato a `'responded'` (Respondido) para reflejar la atención comercial activa.
+2. **Eliminación/Desvinculación de Cita**:
+   - **Leads Reales (`client_email != 'agenda@local'`)**: Al presionar "Eliminar" en el calendario para una cita que proviene de un prospecto real, **queda prohibido borrar físicamente la fila de la base de datos**. El sistema debe realizar una desvinculación lógica: establecer `is_appointment = false`, limpiar los campos de cita (`appointment_date`, `appointment_time`, `appointment_status`), y **revertir el estado general (`status`) a `'pending'`** (Pendiente). Esto garantiza que el lead regrese a la bandeja del CRM para seguimiento manual del agente y previene fugas de prospectos.
+   - **Citas Orgánicas Puras (`client_email == 'agenda@local'`)**: Al borrarse del calendario, se eliminan físicamente de la base de datos de manera definitiva, ya que no corresponden a un lead previo.
+
+### Regla #102: Capacitación del Asistente Virtual para CRUD Avanzado y Gestión de Conflictos
+**Contexto**: Ava debe actuar como un agente de ventas autónomo y capaz de resolver cualquier consulta de agenda del cliente o del agente de manera bilingüe e interactiva, manteniendo a todos informados en tiempo real.
+**Regla**:
+1. **Consulta de Citas (Read)**: Ava cuenta con la herramienta `consultar_visitas_cliente` para buscar citas activas usando el teléfono del cliente. Debe usarla para verificar la información existente antes de modificar registros o para contestar preguntas sobre citas programadas.
+2. **Notificaciones de Actualización en Caliente**: Cualquier cambio de estado de cita realizado a través de Ava o del panel manual (como confirmar `'confirm'`, reprogramar `'reschedule'` o finalizar `'done'`) debe disparar obligatoriamente una invocación a la Edge Function `send-budget-email` con el parámetro `isUpdate: true` para notificar de inmediato por correo electrónico al agente asignado y al administrador.
+3. **Mitigación Inteligente de Conflictos**: Ante un solapamiento de horarios (colisión), el backend retorna las horas ocupadas del día. Ava debe analizar esta lista e indicarle cortésmente al cliente qué horas están reservadas, sugiriéndole de forma proactiva horarios alternativos disponibles en el mismo día.
+4. **Finalización de Visita (`done`)**: Ava está capacitada para actualizar la cita al estado `'done'` (Realizada) si un agente o administrador autenticado en la sesión de chat se lo solicita, facilitando el reporte de visitas manos libres.

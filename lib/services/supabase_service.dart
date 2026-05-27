@@ -366,7 +366,25 @@ class SupabaseService {
   }
 
   Future<void> deleteAppointment(String id) async {
-    await client.from('budget_requests').delete().eq('id', id);
+    final response = await client
+        .from('budget_requests')
+        .select('client_email')
+        .eq('id', id)
+        .single();
+        
+    final email = response['client_email'] as String?;
+    
+    if (email == 'agenda@local') {
+      await client.from('budget_requests').delete().eq('id', id);
+    } else {
+      await client.from('budget_requests').update({
+        'is_appointment': false,
+        'appointment_date': null,
+        'appointment_time': null,
+        'appointment_status': null,
+        'status': 'pending',
+      }).eq('id', id);
+    }
   }
 
   Future<int> getTodayAppointmentsCount(String companyId, {String? agentId}) async {

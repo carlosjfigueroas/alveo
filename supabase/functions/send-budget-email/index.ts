@@ -12,7 +12,11 @@ serve(async (req) => {
 
   try {
     const payload = await req.json()
-    const { name, email, phone, notes, propertyIds, propertyDetails, locale, companyEmail, companyName, primaryColor, secondaryColor, agentEmail } = payload
+    const { 
+      name, email, phone, notes, propertyIds, propertyDetails, locale, 
+      companyEmail, companyName, primaryColor, secondaryColor, agentEmail,
+      isUpdate, updateType, appointmentDate, appointmentTime 
+    } = payload
     
     const isEn = locale === 'en';
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
@@ -69,51 +73,128 @@ serve(async (req) => {
         else if (prop.operation === 'alquiler') propOperationT = 'Rent';
     }
 
-    const emailHtml = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-      <div style="background-color: ${pColor}; padding: 30px; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 300;">${t.title}</h1>
-        <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${displayCompany}</p>
-      </div>
-      <div style="padding: 35px;">
-        <p style="font-size: 16px;">${t.greeting} <strong>${name}</strong>,</p>
-        <p style="font-size: 15px; line-height: 1.6; color: #555;">${t.intro}</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-top: 30px; background-color: #fcfcfc; border-radius: 8px; overflow: hidden;">
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; color: #666; font-size: 14px;">${t.propLabel}</td>
-            <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${propTitle}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; color: #666; font-size: 14px;">${t.opLabel}</td>
-            <td style="padding: 15px; text-align: right; font-weight: bold; text-transform: capitalize; color: #111;">${propOperationT}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 15px; color: #666; font-size: 14px;">${t.typeLabel}</td>
-            <td style="padding: 15px; text-align: right; font-weight: bold; text-transform: capitalize; color: #111;">${propType}</td>
-          </tr>
-          <tr>
-            <td style="padding: 25px 15px; font-size: 18px; font-weight: bold; color: ${pColor};">${t.priceLabel}</td>
-            <td style="padding: 25px 15px; font-size: 24px; font-weight: bold; color: ${sColor}; text-align: right;">${propPrice}</td>
-          </tr>
-        </table>
-        
-        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid ${sColor}; border-radius: 4px;">
-          <h4 style="margin: 0 0 8px 0; font-size: 13px; color: ${pColor}; text-transform: uppercase;">${t.notesTitle}</h4>
-          <p style="margin: 0; font-size: 15px; color: #444; font-style: italic;">"${notes || t.noNotes}"</p>
+    let emailHtml = "";
+    let subjectLine = "";
+    let agencySubjectLine = "";
+
+    if (isUpdate) {
+      const isConfirmed = updateType === 'confirm';
+      const isRescheduled = updateType === 'reschedule';
+      const isDone = updateType === 'done';
+      const isCancelled = updateType === 'cancel' || updateType === 'delete';
+
+      let statusText = updateType;
+      let statusColor = '#E65100'; // orange
+      if (isConfirmed) { statusText = isEn ? 'CONFIRMED' : 'CONFIRMADA'; statusColor = '#2E7D32'; }
+      else if (isRescheduled) { statusText = isEn ? 'RESCHEDULED' : 'REPROGRAMADA'; statusColor = '#1565C0'; }
+      else if (isDone) { statusText = isEn ? 'REALIZED' : 'REALIZADA'; statusColor = '#37474F'; }
+      else if (isCancelled) { statusText = isEn ? 'CANCELLED' : 'CANCELADA'; statusColor = '#C62828'; }
+
+      const updateTitle = isEn ? "Appointment Update Notification" : "Actualización de Cita Inmobiliaria";
+      agencySubjectLine = `[ACTUALIZACIÓN CITA: ${statusText}] ${name} - ${displayCompany}`;
+
+      emailHtml = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <div style="background-color: ${pColor}; padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 20px; font-weight: 300;">${updateTitle}</h1>
+          <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${displayCompany}</p>
         </div>
-        
-        <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #666; line-height: 1.6;">
-          ${t.footerMsg} <strong style="color: ${pColor};">${phone}</strong> ${t.footerEnd}
-        </p>
-        
-        <div style="margin-top: 35px; border-top: 1px solid #eee; padding-top: 25px; text-align: center;">
-            <p style="margin: 0; font-size: 13px; color: #444; font-weight: bold;">${displayCompany}</p>
-            <p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">${t.autoMsg} ${autoFallbackEmail}</p>
+        <div style="padding: 35px;">
+          <p style="font-size: 16px;">${isEn ? 'Hello Agent' : 'Hola Agente'},</p>
+          <p style="font-size: 15px; line-height: 1.6; color: #555;">
+            ${isEn ? `The appointment with the client **${name}** has registered an update in the system.` : `La cita con el cliente **${name}** ha registrado una actualización en el sistema.`}
+          </p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 30px; background-color: #fcfcfc; border-radius: 8px; overflow: hidden;">
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Client:' : 'Cliente:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${name}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Phone:' : 'Teléfono:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${phone}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Property:' : 'Inmueble:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${propTitle}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Status/Action:' : 'Estado/Acción:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: ${statusColor}; font-size: 16px; text-transform: uppercase;">${statusText}</td>
+            </tr>
+            ${appointmentDate ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Date:' : 'Fecha Cita:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${appointmentDate}</td>
+            </tr>` : ''}
+            ${appointmentTime ? `
+            <tr>
+              <td style="padding: 15px; color: #666; font-size: 14px;">${isEn ? 'Time:' : 'Hora Cita:'}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${appointmentTime.substring(0, 5)}</td>
+            </tr>` : ''}
+          </table>
+          
+          <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid ${statusColor}; border-radius: 4px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 13px; color: ${pColor}; text-transform: uppercase;">${isEn ? 'Details:' : 'Detalles de Bitácora:'}</h4>
+            <p style="margin: 0; font-size: 15px; color: #444; font-style: italic;">"${notes || (isEn ? 'No additional notes provided.' : 'Sin notas adicionales.')}"</p>
+          </div>
+          
+          <div style="margin-top: 35px; border-top: 1px solid #eee; padding-top: 25px; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #444; font-weight: bold;">${displayCompany}</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">${isEn ? 'Transactional update sent automatically by Alveo.' : 'Correo transaccional enviado automáticamente por Alveo.'}</p>
+          </div>
         </div>
       </div>
-    </div>
-    `
+      `;
+    } else {
+      subjectLine = `${t.subjectText} - ${displayCompany} [${propTitle}]`;
+      agencySubjectLine = `[NUEVO LEAD] ${t.subjectText} - ${displayCompany} [${propTitle}]`;
+      emailHtml = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <div style="background-color: ${pColor}; padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 300;">${t.title}</h1>
+          <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">${displayCompany}</p>
+        </div>
+        <div style="padding: 35px;">
+          <p style="font-size: 16px;">${t.greeting} <strong>${name}</strong>,</p>
+          <p style="font-size: 15px; line-height: 1.6; color: #555;">${t.intro}</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 30px; background-color: #fcfcfc; border-radius: 8px; overflow: hidden;">
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${t.propLabel}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; color: #111;">${propTitle}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${t.opLabel}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; text-transform: capitalize; color: #111;">${propOperationT}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 15px; color: #666; font-size: 14px;">${t.typeLabel}</td>
+              <td style="padding: 15px; text-align: right; font-weight: bold; text-transform: capitalize; color: #111;">${propType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 25px 15px; font-size: 18px; font-weight: bold; color: ${pColor};">${t.priceLabel}</td>
+              <td style="padding: 25px 15px; font-size: 24px; font-weight: bold; color: ${sColor}; text-align: right;">${propPrice}</td>
+            </tr>
+          </table>
+          
+          <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid ${sColor}; border-radius: 4px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 13px; color: ${pColor}; text-transform: uppercase;">${t.notesTitle}</h4>
+            <p style="margin: 0; font-size: 15px; color: #444; font-style: italic;">"${notes || t.noNotes}"</p>
+          </div>
+          
+          <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #666; line-height: 1.6;">
+            ${t.footerMsg} <strong style="color: ${pColor};">${phone}</strong> ${t.footerEnd}
+          </p>
+          
+          <div style="margin-top: 35px; border-top: 1px solid #eee; padding-top: 25px; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #444; font-weight: bold;">${displayCompany}</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">${t.autoMsg} ${autoFallbackEmail}</p>
+          </div>
+        </div>
+      </div>
+      `;
+    }
 
     if (!BREVO_API_KEY) {
       console.warn("No BREVO_API_KEY found.");
@@ -132,12 +213,12 @@ serve(async (req) => {
         email: "alveo.soporte@gmail.com"
     };
 
-    // 1. Enviar correo al Cliente (Prospecto)
-    if (clientEmail) {
+    // 1. Enviar correo al Cliente (Prospecto) - Solo si NO es una actualización
+    if (clientEmail && !isUpdate) {
       const clientPayload = {
           sender: sender,
           to: [{ email: clientEmail }],
-          subject: `${t.subjectText} - ${displayCompany} [${propTitle}]`,
+          subject: subjectLine,
           htmlContent: emailHtml
       };
       await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -156,7 +237,7 @@ serve(async (req) => {
     const agencyPayload = {
         sender: sender,
         to: [{ email: agencyEmailTo }],
-        subject: `[NUEVO LEAD] ${t.subjectText} - ${displayCompany} [${propTitle}]`,
+        subject: agencySubjectLine,
         htmlContent: emailHtml
     };
     
