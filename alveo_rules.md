@@ -659,3 +659,15 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 2. **Notificaciones de Actualización en Caliente**: Cualquier cambio de estado de cita realizado a través de Ava o del panel manual (como confirmar `'confirm'`, reprogramar `'reschedule'` o finalizar `'done'`) debe disparar obligatoriamente una invocación a la Edge Function `send-budget-email` con el parámetro `isUpdate: true` para notificar de inmediato por correo electrónico al agente asignado y al administrador.
 3. **Mitigación Inteligente de Conflictos**: Ante un solapamiento de horarios (colisión), el backend retorna las horas ocupadas del día. Ava debe analizar esta lista e indicarle cortésmente al cliente qué horas están reservadas, sugiriéndole de forma proactiva horarios alternativos disponibles en el mismo día.
 4. **Finalización de Visita (`done`)**: Ava está capacitada para actualizar la cita al estado `'done'` (Realizada) si un agente o administrador autenticado en la sesión de chat se lo solicita, facilitando el reporte de visitas manos libres.
+
+---
+
+### Regla #103: Convenciones de Nombres en la Tabla de Compañías y Bypass de RLS SELECT
+**Contexto**: La tabla de empresas (`companies`) almacena el subdominio del tenant en una columna llamada `domain` (con formato `subdominio.alveo.fyi`) y el correo de contacto en `contact_email`. Intentar realizar consultas a columnas inexistentes como `subdomain` o `email` en Edge Functions causará errores silenciosos de base de datos que dejarán al objeto de compañía en `null`, provocando fallos en cascada en las herramientas de IA (ej: pasar el ID `"undefined"` a consultas UUID en Postgres).
+**Regla**:
+1. **Acceso a Datos de Tenant**: En las Edge Functions de Supabase, para obtener la información pública y administrativa de la agencia, se debe consultar estrictamente la columna `domain` en lugar de `subdomain`, y la columna `contact_email` en lugar de `email`.
+2. **Extracción Conversacional de Subdominio**: Si se requiere el prefijo abreviado del subdominio para construir URLs dinámicas o para el prompt conversacional, se debe extraer del dominio de forma segura:
+   ```typescript
+   const subdomain = company?.domain ? company.domain.split('.')[0] : 'demo';
+   ```
+3. **Uso de Cliente de Rol de Servicio para Consultar Compañías**: Dado que los visitantes de catálogo no autenticados (rol `public`) no poseen permisos RLS de lectura (`SELECT`) directa en la tabla de compañías, la Edge Function debe utilizar obligatoriamente `supabaseAdmin` instanciado con la llave de rol de servicio (`SUPABASE_SERVICE_ROLE_KEY`) para consultar la información de la compañía, previniendo que la consulta retorne vacío o cause un crash por falta de privilegios.
