@@ -241,7 +241,7 @@ async function findBestCityMatch(inputCity: string, supabaseClient: any, company
   return inputCity;
 }
 
-async function handleFunctionCall(functionCall: any, supabaseClient: any, company: any, baseUrl: string, locale: string) {
+async function handleFunctionCall(functionCall: any, supabaseClient: any, company: any, baseUrl: string, locale: string, req: Request) {
   const company_id = company?.id;
   if (functionCall.name === 'buscar_propiedades') {
     const args = functionCall.args || {};
@@ -450,6 +450,9 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       }
 
       await supabaseAdmin.functions.invoke('send-budget-email', {
+        headers: {
+          Authorization: req.headers.get('Authorization') || '',
+        },
         body: {
           name: args.clientName,
           email: args.clientEmail || null,
@@ -606,7 +609,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       if (updError) return { error: `Error al cancelar: ${updError.message}` };
       
       // Trigger notification email to agent
-      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'cancel', null, null);
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'cancel', null, null, req);
 
       return { success: true, message: "Cita y solicitud canceladas con éxito." };
     }
@@ -624,7 +627,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       if (updError) return { error: `Error al confirmar: ${updError.message}` };
       
       // Trigger notification email to agent
-      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'confirm', null, null);
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'confirm', null, null, req);
 
       return { success: true, message: "Cita confirmada con éxito." };
     }
@@ -642,7 +645,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       if (updError) return { error: `Error al marcar como realizada: ${updError.message}` };
       
       // Trigger notification email to agent
-      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'done', null, null);
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'done', null, null, req);
 
       return { success: true, message: "Cita marcada como finalizada/realizada con éxito." };
     }
@@ -698,7 +701,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       if (updError) return { error: `Error al reprogramar: ${updError.message}` };
       
       // Trigger notification email to agent
-      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'reschedule', args.newDate, formattedTime);
+      await triggerUpdateEmail(supabaseAdmin, company, locale, request, 'reschedule', args.newDate, formattedTime, req);
 
       return { success: true, message: "Cita reprogramada con éxito en la nueva fecha y hora." };
     }
@@ -711,7 +714,8 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
 
 async function triggerUpdateEmail(
   supabaseAdmin: any, company: any, locale: string, 
-  request: any, updateType: string, newDate: string | null, newTime: string | null
+  request: any, updateType: string, newDate: string | null, newTime: string | null,
+  req: Request
 ) {
   try {
     let propTitle = "Inmueble Alveo";
@@ -738,6 +742,9 @@ async function triggerUpdateEmail(
     }
 
     await supabaseAdmin.functions.invoke('send-budget-email', {
+      headers: {
+        Authorization: req.headers.get('Authorization') || '',
+      },
       body: {
         name: request.client_name,
         email: request.client_email && request.client_email.endsWith('@local') ? null : request.client_email,
@@ -901,7 +908,7 @@ serve(async (req) => {
       if (refMatch) {
         const refNumber = parseInt(refMatch[1], 10);
         console.log('Simulador: Buscando propiedad por ref_number:', refNumber);
-        const result = await handleFunctionCall({ name: 'detalle_propiedad', args: { refNumber } }, supabaseClient, company, baseUrl, locale);
+        const result = await handleFunctionCall({ name: 'detalle_propiedad', args: { refNumber } }, supabaseClient, company, baseUrl, locale, req);
         
         if (result.error || result.message) {
           const notFoundReply = isEn
@@ -999,7 +1006,7 @@ serve(async (req) => {
 
       if (args.propertyType || args.operationType || args.city || args.isFurnished || args.hasPool || args.hasPowerGenerator || args.hasWaterTank || args.hasAirCon) {
         console.log('Simulador: Buscando propiedades por filtros:', args);
-        const searchResult = await handleFunctionCall({ name: 'buscar_propiedades', args }, supabaseClient, company, baseUrl, locale);
+        const searchResult = await handleFunctionCall({ name: 'buscar_propiedades', args }, supabaseClient, company, baseUrl, locale, req);
 
         if (searchResult.error || searchResult.message || !Array.isArray(searchResult) || searchResult.length === 0) {
           const noneFoundReply = isEn
@@ -1210,7 +1217,7 @@ Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo di
       iterations++;
       log(`Function call detected (iteration ${iterations}): ${functionCall.name} ${JSON.stringify(functionCall.args)}`);
       
-      const functionResult = await handleFunctionCall(functionCall, supabaseClient, company, baseUrl, locale);
+      const functionResult = await handleFunctionCall(functionCall, supabaseClient, company, baseUrl, locale, req);
       log(`Function result: ${JSON.stringify(functionResult)}`);
       
       contents.push(geminiData.candidates[0].content);
