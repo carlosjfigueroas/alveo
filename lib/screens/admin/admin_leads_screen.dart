@@ -529,8 +529,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                     Text(sentAt, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                   ],
                                 ),
-                                trailing: Row(
+                                trailing: Column(
                                   mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -548,10 +549,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
                                     IconButton(
                                       icon: const Icon(Icons.delete_outline, color: Colors.red),
                                       onPressed: () => _deleteLead(lead['id']),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      iconSize: 20,
                                     ),
                                   ],
                                 ),

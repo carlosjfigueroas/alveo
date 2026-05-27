@@ -1233,90 +1233,99 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 8,
                       ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Widget de visitas ahora a la izquierda
+                          // Widget de visitas a la izquierda
                           VisitorBadge(
                             count: _weeklyVisitors,
                             isLoading: _isVisitorsLoading,
                           ),
-                          const Spacer(),
                           // Orden y Filtros agrupados a la derecha
-                          Container(
-                            height: 36, // Misma altura que el botón de filtros
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white10
-                                  : Colors.black.withValues(alpha: 0.04),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<PropertySortOption>(
-                                value: _sortOption,
-                                isDense:
-                                    true, // Reduce el padding interno del dropdown
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  size: 18,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                                onChanged: (v) =>
-                                    setState(() => _sortOption = v!),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: PropertySortOption.newest,
-                                    child: Text(l10n.get('newest')),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 160),
+                                child: Container(
+                                  height: 36,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.white10
+                                        : Colors.black.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  DropdownMenuItem(
-                                    value: PropertySortOption.priceAsc,
-                                    child: Text(l10n.get('price_asc')),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<PropertySortOption>(
+                                      value: _sortOption,
+                                      isDense: true,
+                                      isExpanded: true,
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down,
+                                        size: 18,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: isDark ? Colors.white : Colors.black87,
+                                      ),
+                                      onChanged: (v) =>
+                                          setState(() => _sortOption = v!),
+                                      items: [
+                                        DropdownMenuItem(
+                                          value: PropertySortOption.newest,
+                                          child: Text(l10n.get('newest')),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: PropertySortOption.priceAsc,
+                                          child: Text(l10n.get('price_asc')),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: PropertySortOption.priceDesc,
+                                          child: Text(l10n.get('price_desc')),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: PropertySortOption.mostLiked,
+                                          child: Text(l10n.get('most_popular')),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  DropdownMenuItem(
-                                    value: PropertySortOption.priceDesc,
-                                    child: Text(l10n.get('price_desc')),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: PropertySortOption.mostLiked,
-                                    child: Text(l10n.get('most_popular')),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Badge(
-                            label: Text(
-                              '${_filteredProperties.length}',
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                            backgroundColor: AppThemes.terracottaRed,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppThemes.primaryGreen,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                minimumSize: const Size(0, 36),
-                              ),
-                              onPressed: () => _showFilterDialog(context),
-                              icon: const Icon(Icons.tune, size: 16),
-                              label: Text(
-                                l10n.get('filters'),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 12),
+                              Badge(
+                                label: Text(
+                                  '${_filteredProperties.length}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                                backgroundColor: AppThemes.terracottaRed,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppThemes.primaryGreen,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    minimumSize: const Size(0, 36),
+                                  ),
+                                  onPressed: () => _showFilterDialog(context),
+                                  icon: const Icon(Icons.tune, size: 16),
+                                  label: Text(
+                                    l10n.get('filters'),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
