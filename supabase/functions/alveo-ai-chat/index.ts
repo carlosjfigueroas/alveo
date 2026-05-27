@@ -457,7 +457,7 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
           notes: args.notes || 'Registrado automáticamente por la Asistente de IA Ava.',
           propertyIds: propertyList,
           locale: locale || 'es',
-          companyEmail: company?.email || null,
+          companyEmail: company?.contact_email || null,
           companyName: company?.name || 'Alveo Real Estate',
           primaryColor: company?.primary_color,
           secondaryColor: company?.secondary_color,
@@ -720,7 +720,7 @@ async function triggerUpdateEmail(
         notes: request.notes || '',
         propertyIds: propertyList,
         locale: locale || 'es',
-        companyEmail: company?.email || null,
+        companyEmail: company?.contact_email || null,
         companyName: company?.name || 'Alveo Real Estate',
         primaryColor: company?.primary_color,
         secondaryColor: company?.secondary_color,
@@ -763,17 +763,22 @@ serve(async (req) => {
       }
     );
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { data: { user } } = await supabaseClient.auth.getUser();
     
-    // Fetch company info for prompt
-    const { data: company } = await supabaseClient
+    // Fetch company info for prompt using supabaseAdmin to bypass RLS SELECT limitations on company details
+    const { data: company } = await supabaseAdmin
       .from('companies')
-      .select('id, name, subdomain, email, primary_color, secondary_color')
+      .select('id, name, domain, contact_email, primary_color, secondary_color')
       .eq('id', company_id)
       .single();
       
     const companyName = company?.name || 'Alveo';
-    const subdomain = company?.subdomain || 'demo';
+    const subdomain = company?.domain ? company.domain.split('.')[0] : 'demo';
     const baseUrl = `https://${subdomain}.alveo.fyi/ref`;
     
     const isEn = locale === 'en';
@@ -1161,25 +1166,29 @@ Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo di
       });
     }
 
+    const debugLogs: string[] = [];
+    const log = (msg: string) => {
+      console.log(msg);
+      debugLogs.push(msg);
+    };
+
     let functionCall = geminiData.candidates?.[0]?.content?.parts?.[0]?.functionCall;
+    log(`Initial Gemini response: ${JSON.stringify(geminiData.candidates?.[0]?.content || null)}`);
+
     let iterations = 0;
-    
     while (functionCall && iterations < 3) {
       iterations++;
-      console.log(`Function call detected (iteration ${iterations}):`, functionCall.name, functionCall.args);
+      log(`Function call detected (iteration ${iterations}): ${functionCall.name} ${JSON.stringify(functionCall.args)}`);
       
-      // Execute local function
       const functionResult = await handleFunctionCall(functionCall, supabaseClient, company, baseUrl, locale);
+      log(`Function result: ${JSON.stringify(functionResult)}`);
       
-      // Append model's function call request to history
       contents.push(geminiData.candidates[0].content);
 
-      // Ensure the function result is a valid JSON object for Gemini functionResponse (cannot be a raw array)
       const formattedResponse = Array.isArray(functionResult)
         ? { properties: functionResult }
         : functionResult;
 
-      // Append function response
       contents.push({
         role: "user", 
         parts: [{
@@ -1190,7 +1199,6 @@ Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo di
         }]
       });
 
-      // Next call to Gemini
       const payload2 = {
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: contents,
@@ -1206,22 +1214,18 @@ Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo di
       geminiData = await resGemini.json();
 
       if (!resGemini.ok) {
-        console.error(`Gemini error (iteration ${iterations}):`, geminiData);
+        log(`Gemini error (iteration ${iterations}): ${JSON.stringify(geminiData)}`);
         return new Response(JSON.stringify({ error: geminiData.error?.message || `Error generating response after function call in iteration ${iterations}` }), { status: 500, headers: corsHeaders });
       }
       
-      // Check if there is another function call in the new response
+      log(`Gemini response after function call: ${JSON.stringify(geminiData.candidates?.[0]?.content || null)}`);
       functionCall = geminiData.candidates?.[0]?.content?.parts?.[0]?.functionCall;
     }
 
     const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+    log(`Final reply: ${reply}`);
 
     // Insert usage log asynchronously
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-    
     supabaseAdmin.from('ai_usage').insert({
       company_id: company_id,
       user_id: user?.id || null,
