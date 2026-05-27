@@ -687,3 +687,34 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
    npx @marp-team/marp-cli --pdf --allow-local-files --no-stdin <archivo>.md -o <archivo>.pdf
    ```
 4. **Naturaleza Estática del Formato PPTX de Marp**: Se debe advertir al usuario que por diseño de Marp, la exportación a `.pptx` genera las diapositivas como imágenes completas no editables directamente en PowerPoint (debido a que la conversión nativa editable requiere herramientas de sistema de terceros como LibreOffice Impress que no suelen estar disponibles en los servidores o entornos de despliegue ligeros).
+
+---
+
+### Regla #105: Uso de Roles de Supabase en Edge Function `alveo-ai-chat`
+**Contexto**: El Asistente Virtual ("Ava") interactúa con información sensible de la empresa y los clientes que está protegida bajo estrictas políticas RLS en Supabase. Si la Edge Function utiliza el cliente estándar anon con la cabecera de autenticación del usuario, la base de datos retornará listas vacías o fallará silenciosamente debido a que RLS restringe el acceso a un solo tenant o usuario.
+**Regla**:
+1. **Cliente anon para Consultas Públicas**: Se debe usar `supabaseClient` (configurado con la clave anónima y la cabecera de autorización del usuario) únicamente para consultar la tabla `properties`. Esto garantiza que se respeten correctamente los permisos RLS del tenant para el catálogo público.
+2. **Cliente Admin (Service Role) para Operaciones Administrativas**: Se debe usar obligatoriamente `supabaseAdmin` (inicializado con la Service Role Key) para las siguientes operaciones críticas:
+   * Leer información interna de la agencia en la tabla `companies`.
+   * Insertar y actualizar registros en la tabla `budget_requests`.
+   * Consultar perfiles en la tabla `profiles`.
+   * Consultar, modificar o cancelar citas en el calendario.
+   * Modificar el estado de visitas.
+
+---
+
+### Regla #106: Anti-colisión de Horarios y Matching Difuso de Teléfono en Ava
+**Contexto**: La IA de Ava debe verificar conflictos de agenda de manera inteligente y emparejar clientes de manera flexible, tolerando variaciones en la escritura de los números telefónicos (por ejemplo, con prefijos internacionales o espacios).
+**Regla**:
+1. **Verificación de Colisión Inteligente**: Al comprobar conflictos de horario, la herramienta de agendamiento solo debe comparar y considerar citas confirmadas (`appointment_status = 'confirmed'`). No se deben bloquear horarios por citas con estados pendientes (`pending`) o cancelados, permitiendo una agenda fluida.
+2. **Matching de Teléfono Robusto (Fuzzy Match)**: Para la consulta de citas existentes (`consultar_visitas_cliente` y `modificar_solicitud_visita`), ambos números de teléfono (el proporcionado por el usuario y el de la base de datos) deben normalizarse de forma estricta a dígitos numéricos puros (ej. `.replace(/\D/g, '')`). 
+3. **Comparación Flexible**: La comparación es positiva si los números son exactamente iguales tras la normalización o si uno actúa como sufijo del otro (ej. `endsWith()`), lo cual tolera de manera automática los prefijos internacionales de país (`+58`, `+1`, etc.).
+
+---
+
+### Regla #107: Arquitectura de Chat de IA y Activación de Micrófono en Web (AiChatScreen Voice Input Context)
+**Contexto**: En Flutter Web, la grabación de voz para enviar mensajes de audio interactivos está sujeta a políticas de seguridad estrictas del navegador relativas a la activación por usuario (User Activation Context). Si la inicialización del micrófono (`AudioRecorder.start()`) se difiere o se delega a microtareas o widgets secundarios, el navegador denegará el acceso y la grabación de voz fallará sin levantar la interfaz de permisos.
+**Regla**:
+1. **Estructura de Visualización**: El chat con Ava en la app de Flutter se visualiza dentro de un `DraggableScrollableSheet` contenido en un modal bottom sheet (`showModalBottomSheet`), adaptando sus dimensiones al dispositivo: 85% a 95% de alto en móviles, y hasta 70% en pantallas de escritorio.
+2. **Llamada Síncrona Directa**: El método de inicio de grabación `AudioRecorder.start()` se debe invocar directamente y de forma síncrona dentro del callback `onPressed` o `onTap` del botón de grabación en la UI principal.
+3. **Prohibición de Delegación Asíncrona**: Queda terminantemente prohibido diferir la grabación con `Future.microtask`, llamadas asíncronas demoradas o delegar el disparo inicial a un estado secundario tardío, asegurando que se preserve intacto el "transient user-activation context" que los navegadores modernos exigen para conceder permisos mediante `getUserMedia()`.
