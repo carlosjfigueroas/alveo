@@ -652,6 +652,8 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
    - **Leads Reales (`client_email != 'agenda@local'`)**: Al presionar "Eliminar" en el calendario para una cita que proviene de un prospecto real, **queda prohibido borrar físicamente la fila de la base de datos**. El sistema debe realizar una desvinculación lógica: establecer `is_appointment = false`, limpiar los campos de cita (`appointment_date`, `appointment_time`, `appointment_status`), y **revertir el estado general (`status`) a `'pending'`** (Pendiente). Esto garantiza que el lead regrese a la bandeja del CRM para seguimiento manual del agente y previene fugas de prospectos.
    - **Citas Orgánicas Puras (`client_email == 'agenda@local'`)**: Al borrarse del calendario, se eliminan físicamente de la base de datos de manera definitiva, ya que no corresponden a un lead previo.
 
+---
+
 ### Regla #102: Capacitación del Asistente Virtual para CRUD Avanzado y Gestión de Conflictos
 **Contexto**: Ava debe actuar como un agente de ventas autónomo y capaz de resolver cualquier consulta de agenda del cliente o del agente de manera bilingüe e interactiva, manteniendo a todos informados en tiempo real.
 **Regla**:
@@ -671,3 +673,17 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
    const subdomain = company?.domain ? company.domain.split('.')[0] : 'demo';
    ```
 3. **Uso de Cliente de Rol de Servicio para Consultar Compañías**: Dado que los visitantes de catálogo no autenticados (rol `public`) no poseen permisos RLS de lectura (`SELECT`) directa en la tabla de compañías, la Edge Function debe utilizar obligatoriamente `supabaseAdmin` instanciado con la llave de rol de servicio (`SUPABASE_SERVICE_ROLE_KEY`) para consultar la información de la compañía, previniendo que la consulta retorne vacío o cause un crash por falta de privilegios.
+
+---
+
+### Regla #104: Compilación de Presentaciones (Marp CLI y Seguridad de Archivos Locales)
+**Contexto**: Alveo incluye dossiers y presentaciones comerciales compiladas en formatos como HTML, PDF y PowerPoint (PPTX) a partir de archivos Markdown (`.md`) usando **Marp CLI**. Si se ejecuta la compilación de forma predeterminada, Marp bloqueará por seguridad el acceso a las imágenes y capturas de pantalla guardadas localmente en la carpeta del proyecto, generando diapositivas completamente en blanco o vacías.
+**Regla**:
+1. **Acceso a Archivos Locales Obligatorio**: Al compilar cualquier presentación que contenga imágenes locales en la carpeta del proyecto, se DEBE usar obligatoriamente la bandera `--allow-local-files` en Marp CLI.
+2. **Evitar Espera de Stream (Stdin)**: Se debe pasar siempre la bandera `--no-stdin` al invocar Marp CLI desde terminales de agentes para evitar que el comando se quede colgado esperando entrada de consola de forma indefinida.
+3. **Comando de Compilación Recomendado**:
+   ```bash
+   npx @marp-team/marp-cli --pptx --allow-local-files --no-stdin <archivo>.md -o <archivo>.pptx
+   npx @marp-team/marp-cli --pdf --allow-local-files --no-stdin <archivo>.md -o <archivo>.pdf
+   ```
+4. **Naturaleza Estática del Formato PPTX de Marp**: Se debe advertir al usuario que por diseño de Marp, la exportación a `.pptx` genera las diapositivas como imágenes completas no editables directamente en PowerPoint (debido a que la conversión nativa editable requiere herramientas de sistema de terceros como LibreOffice Impress que no suelen estar disponibles en los servidores o entornos de despliegue ligeros).
