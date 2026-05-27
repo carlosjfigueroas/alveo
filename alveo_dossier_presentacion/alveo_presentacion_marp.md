@@ -222,16 +222,14 @@ Alveo incorpora un panel administrativo para liquidar comisiones y transacciones
 ## El Corazón del Flujo de Trabajo del Corredor
 Mantén a tu equipo de agentes sincronizado y con control absoluto sobre las oportunidades de venta:
 
-* **Integración Nactiva de la Agente Ava**:
-  * Cuando un cliente solicita visitar una propiedad o deja sus datos de contacto en el chat, **Ava invoca de forma autónoma la herramienta del CRM para registrar la solicitud de visita o el lead en la base de datos en tiempo real**.
-  * Guarda automáticamente el nombre, teléfono, fecha y hora de la cita, asociándola al inmueble e indicando el agente responsable de forma desatendida.
-* **Agenda Digital de Citas**:
-  * Calendario mensual, semanal y diario interactivo.
-  * Creación rápida de citas vinculando directamente al agente, al cliente interesado y la propiedad de referencia.
-  * Control de estados de cita (*Pendiente, Confirmada, Cancelada, Realizada*).
-* **Gestor de Clientes Interesados (CRM de Leads)**:
-  * Recepción de solicitudes formales de presupuesto del botón "Me Interesa".
-  * Calificación de prospectos y registro de fecha y notas específicas de los clientes.
+* **Integración Nactiva de la Agente Ava (CRUD y Consulta)**:
+  * **Agendar y Calificar**: Ava registra la solicitud en el CRM y la cita en la Agenda, cambiando el lead a "Respondida" para reflejar la atención activa.
+  * **Consultar, Confirmar, Reprogramar y Cancelar**: El cliente puede pedirle a Ava consultar sus citas, confirmarlas, reprogramarlas o cancelarlas. Ava valida horarios en caliente, resuelve colisiones sugiriendo horas libres del día y ejecuta los cambios.
+  * **Finalizar (`done`)**: Los agentes y administradores pueden pedirle a Ava marcar la cita como realizada de forma 100% manos libres.
+* **Notificaciones por Correo de Actualización**:
+  * Cualquier cambio de estado de cita (confirmada, reprogramada, cancelada o realizada) gatilla un **correo de alerta al agente asignado** en tiempo real.
+* **Integridad del CRM y Agenda (Eliminaciones Seguras)**:
+  * Si un agente elimina manualmente una cita de un prospecto real en el calendario, el sistema desvincula la cita y **restaura el lead a "Pendiente"** en el CRM, previniendo la pérdida de oportunidades comerciales.
 
 </div>
 
