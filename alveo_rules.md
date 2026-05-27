@@ -606,3 +606,38 @@ En interfaces de chat de IA (como Ava), los enlaces recomendados de propiedades 
 1. **Sincronización Atómica**: Cada vez que el agente o programador ejecute un comando de despliegue (`deploy`) a producción, hosting o CDN (como Vercel o Supabase Edge Functions), se DEBE realizar inmediatamente y de forma atómica un commit y push (summit) con los cambios de código fuente correspondientes a GitHub.
 2. **Registro de Consistencia**: Ningún despliegue se considera completado hasta que la versión del repositorio remoto esté perfectamente sincronizada.
 
+---
+
+### Regla #98: Flujo Operativo y UI para Gestión de Leads y Citas (Manual vs. IA)
+**Contexto**: El flujo de conversión de un Lead (solicitud) a una cita confirmada en la agenda varía significativamente si el proceso se inicia a través del botón tradicional en la web o si es gestionado íntegramente por el Asistente de IA (Ava). La interfaz administrativa debe proveer herramientas para que la vinculación manual sea atómica y no duplique registros, al mismo tiempo que permite registros orgánicos espontáneos.
+**Regla**:
+1. **Flujo Manual (Sin IA)**:
+   * **Creación vía App**: Al presionar "Me interesa", se crea un Lead con fecha de creación y se notifica por correo al agente.
+   * **Seguimiento**: El agente contacta al prospecto. Independientemente de si se concreta una cita o no, el agente debe entrar al módulo "Leads" y cambiar el estado del Lead (ej. respondido o rechazado).
+   * **Agendamiento desde Lead (UI Requerida)**: Si acuerdan una visita proveniente de un Lead web, el agente ingresa al módulo "Agenda". Debe existir un botón que abra una **ventana emergente (modal)** con un buscador de Leads pendientes. Al seleccionar uno, su información se carga en la página de edición de la agenda. Al guardar, **no se crea un nuevo registro**, sino que se actualiza el registro del Lead seleccionado, añadiendo la información de la cita y cambiando su estado a `respondido`.
+   * **Agendamiento Orgánico Directo**: El módulo de "Agenda" también permite registrar citas orgánicas (es decir, cuando un prospecto contacta espontáneamente, por redes sociales o referido por un tercero, sin haber pasado por el formulario "Me interesa"). En este caso, el agente puede crear una cita completamente nueva desde cero sin requerir asociarla a un Lead preexistente.
+2. **Flujo Automatizado (Con IA)**:
+   * **Recopilación y Registro Único**: Cuando Ava interactúa con el cliente, obtiene la información de interés y la disponibilidad. La IA registra en la tabla `budget_requests` **ambos conjuntos de datos** (información del Lead y detalles de la Agenda) en un **solo registro atómico**.
+   * **Visibilidad Dual**: Este registro aparecerá simultáneamente como un nuevo Lead en el módulo de Solicitudes y como una cita programada en la fecha y hora correspondiente en el módulo de Agenda.
+   * **Prevención de Colisiones**: La IA asume la responsabilidad de verificar previamente la disponibilidad en la base de datos para asegurar que no exista solapamiento de horarios con otras citas antes de insertar el registro.
+
+---
+
+### Regla #99: Proactividad e Interrogación Obligatoria (Ask Clarifying Questions)
+**Contexto**: En el desarrollo de flujos complejos (como integraciones de IA, gestión de agendas y CRM), es común que la especificación inicial omita casos borde o flujos secundarios (ej. reprogramaciones, notificaciones asíncronas). Asumir el comportamiento de estos casos puede generar deuda técnica o inconsistencias operativas.
+**Regla**:
+1. **Preguntar sin Dudar**: El Asistente de Desarrollo (IA) DEBE identificar activamente vacíos lógicos en los requerimientos solicitados (ej. "¿Qué pasa si se cancela?", "¿Quién notifica a quién?") y formular preguntas clarificatorias al programador/usuario antes o durante la implementación.
+2. **Eliminación de Suposiciones**: Queda prohibido asumir procesos de negocio no especificados explícitamente. Siempre se debe validar con el usuario para asegurar que la solución técnica se alinea perfectamente con la operación real de la inmobiliaria.
+
+---
+
+### Regla #100: Privacidad e Independencia en Notificaciones por Correo
+**Contexto**: El sistema envía correos electrónicos automatizados (mediante Brevo u otros proveedores vía Edge Functions) cuando se generan nuevos leads, solicitudes de presupuesto o agendamientos.
+**Anti-patrón (Cómo se hacía antes y por qué era un error)**: 
+Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.com`, `cliente@gmail.com`, `agente@agencia.com`) en un solo arreglo (array) y ejecutaba una única llamada a la API de Brevo. Esto causaba que todos los destinatarios recibieran el mismo correo y pudieran ver las direcciones de correo electrónico de las otras personas en la cabecera "Para:" (To:), violando la privacidad de los datos y mostrando una apariencia poco profesional.
+**Regla**:
+1. **Llamadas API Independientes**: Queda terminantemente prohibido agrupar correos electrónicos de distintos roles (ej. cliente, agente, administrador) dentro de un mismo arreglo `to` en una única llamada a la API de envío, ya que esto expone las direcciones de correo entre las partes.
+2. **Correos de Prospectos vs. Correos Internos**: Se deben ejecutar **mínimo dos llamadas separadas** a la API de correo:
+   * **Llamada 1**: Exclusiva para el Cliente/Prospecto (con un mensaje amigable o de confirmación).
+     * *Tolerancia a fallos*: Dado que la IA y algunos flujos priorizan la captación del teléfono (ej. para WhatsApp), el correo del prospecto es **opcional**. Si el correo es nulo o inválido, esta llamada se omite silenciosamente sin romper el proceso.
+   * **Llamada 2**: Exclusiva para el Agente asignado o el Administrador (con un prefijo claro en el asunto, ej. `[NUEVO LEAD]`, para facilitar filtros internos). Ésta llamada se ejecuta **siempre**, garantizando que el vendedor reciba el lead y el teléfono del contacto.

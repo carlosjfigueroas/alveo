@@ -155,6 +155,36 @@ const tools = [
           },
           required: ["clientName", "phone", "propertyRef"]
         }
+      },
+      {
+        name: "modificar_solicitud_visita",
+        description: "Modifica o cancela una solicitud de visita existente en el CRM usando el número de teléfono y nombre del cliente. Debe llamarse cuando el cliente pida cancelar o cambiar la fecha/hora de su cita.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            clientName: {
+              type: "STRING",
+              description: "Nombre completo del cliente"
+            },
+            phone: {
+              type: "STRING",
+              description: "Número de teléfono de contacto usado al agendar"
+            },
+            action: {
+              type: "STRING",
+              description: "Acción a realizar: 'cancel' para cancelar la cita, 'reschedule' para cambiar fecha/hora, 'confirm' para confirmar la cita."
+            },
+            newDate: {
+              type: "STRING",
+              description: "Nueva fecha en formato YYYY-MM-DD (solo si action es 'reschedule')"
+            },
+            newTime: {
+              type: "STRING",
+              description: "Nueva hora en formato HH:MM (solo si action es 'reschedule')"
+            }
+          },
+          required: ["clientName", "phone", "action"]
+        }
       }
     ]
   }
@@ -197,7 +227,8 @@ async function findBestCityMatch(inputCity: string, supabaseClient: any, company
   return inputCity;
 }
 
-async function handleFunctionCall(functionCall: any, supabaseClient: any, company_id: string, baseUrl: string) {
+async function handleFunctionCall(functionCall: any, supabaseClient: any, company: any, baseUrl: string, locale: string) {
+  const company_id = company?.id;
   if (functionCall.name === 'buscar_propiedades') {
     const args = functionCall.args || {};
     
@@ -388,6 +419,38 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       return { error: `Error al guardar en el CRM: ${insertError.message}` };
     }
 
+    // 5. Send notification email via edge function
+    try {
+      let agentEmail = null;
+      if (property.listing_agent_id) {
+        const { data: agentData } = await supabaseAdmin
+          .from('profiles')
+          .select('email')
+          .eq('id', property.listing_agent_id)
+          .single();
+        if (agentData) agentEmail = agentData.email;
+      }
+
+      await supabaseAdmin.functions.invoke('send-budget-email', {
+        body: {
+          name: args.clientName,
+          email: args.clientEmail || null,
+          phone: args.phone,
+          notes: args.notes || 'Registrado automáticamente por la Asistente de IA Ava.',
+          propertyIds: propertyList,
+          locale: locale || 'es',
+          companyEmail: company?.email || null,
+          companyName: company?.name || 'Alveo Real Estate',
+          primaryColor: company?.primary_color,
+          secondaryColor: company?.secondary_color,
+          agentEmail: agentEmail
+        }
+      });
+      console.log('Email notification triggered');
+    } catch (e) {
+      console.error('Failed to trigger email notification', e);
+    }
+
     return { 
       success: true, 
       message: "Solicitud registrada con éxito en el CRM de Alveo.",
@@ -397,6 +460,107 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
       appointmentTime: data.appointment_time,
       propertyTitle: property.title
     };
+  }
+
+  if (functionCall.name === 'modificar_solicitud_visita') {
+    const args = functionCall.args || {};
+    if (!args.clientName || !args.phone || !args.action) {
+      return { error: "Faltan datos obligatorios (nombre, teléfono o acción)" };
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Find the most recent active budget_request for this phone/name
+    const { data: requests, error: reqError } = await supabaseAdmin
+      .from('budget_requests')
+      .select('id, appointment_date, appointment_time, appointment_status, property_list, assigned_agent_id, status')
+      .eq('company_id', company_id)
+      .eq('phone', args.phone)
+      .in('status', ['pending', 'responded'])
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (reqError || !requests || requests.length === 0) {
+      return { success: false, message: "No se encontró ninguna solicitud de visita activa registrada bajo ese número de teléfono y nombre." };
+    }
+
+    const request = requests[0];
+
+    if (args.action === 'cancel') {
+      const { error: updError } = await supabaseAdmin
+        .from('budget_requests')
+        .update({ status: 'rejected', appointment_status: 'cancelled', notes: 'Cancelado automáticamente por Ava a petición del cliente.' })
+        .eq('id', request.id);
+
+      if (updError) return { error: `Error al cancelar: ${updError.message}` };
+      return { success: true, message: "Cita y solicitud canceladas con éxito." };
+    }
+
+    if (args.action === 'confirm') {
+      const { error: updError } = await supabaseAdmin
+        .from('budget_requests')
+        .update({ 
+          status: 'responded', 
+          appointment_status: 'confirmed', 
+          notes: request.notes ? `${request.notes}\nConfirmado automáticamente por Ava a petición del cliente.` : 'Confirmado automáticamente por Ava a petición del cliente.'
+        })
+        .eq('id', request.id);
+
+      if (updError) return { error: `Error al confirmar: ${updError.message}` };
+      return { success: true, message: "Cita confirmada con éxito." };
+    }
+
+    if (args.action === 'reschedule') {
+      if (!args.newDate || !args.newTime) return { error: "Para reprogramar, debes proporcionar newDate y newTime." };
+
+      const formattedTime = args.newTime.includes(':')
+        ? (args.newTime.split(':').length === 2 ? `${args.newTime}:00` : args.newTime)
+        : args.newTime;
+
+      // Anti-collision logic
+      const { data: existingAppts, error: checkError } = await supabaseAdmin
+        .from('budget_requests')
+        .select('id, property_list, assigned_agent_id')
+        .eq('company_id', company_id)
+        .eq('appointment_date', args.newDate)
+        .eq('appointment_time', formattedTime)
+        .eq('appointment_status', 'confirmed');
+
+      if (!checkError && existingAppts && existingAppts.length > 0) {
+        const hasConflict = existingAppts.some((appt: any) => {
+          const matchesAgent = request.assigned_agent_id && appt.assigned_agent_id === request.assigned_agent_id;
+          const matchesProperty = Array.isArray(appt.property_list) && Array.isArray(request.property_list) &&
+            appt.property_list.some((pid:any) => request.property_list.includes(pid));
+          return matchesAgent || matchesProperty;
+        });
+
+        if (hasConflict) {
+          return { 
+            success: false, 
+            conflict: true,
+            message: `Conflicto de horario: El bloque del ${args.newDate} a las ${args.newTime} ya está ocupado para esa propiedad/agente. Sugiere otra hora.`
+          };
+        }
+      }
+
+      const { error: updError } = await supabaseAdmin
+        .from('budget_requests')
+        .update({ 
+          appointment_date: args.newDate, 
+          appointment_time: formattedTime, 
+          appointment_status: 'pending',
+          is_appointment: true
+        })
+        .eq('id', request.id);
+
+      if (updError) return { error: `Error al reprogramar: ${updError.message}` };
+      return { success: true, message: "Cita reprogramada con éxito en la nueva fecha y hora." };
+    }
+
+    return { error: "Acción no reconocida" };
   }
 
   return { error: 'Unknown function' };
@@ -433,7 +597,7 @@ serve(async (req) => {
     // Fetch company info for prompt
     const { data: company } = await supabaseClient
       .from('companies')
-      .select('name, subdomain')
+      .select('id, name, subdomain, email, primary_color, secondary_color')
       .eq('id', company_id)
       .single();
       
@@ -490,12 +654,29 @@ serve(async (req) => {
         });
       }
 
+      // --- APPOINTMENT MODIFICATION INTENT SIMULATOR ---
+      if (/cancelar|reprogramar|cambiar|modificar|confirmar/i.test(textMessage) && (/\d{7,}/.test(textMessage) || /@/.test(textMessage))) {
+        console.log('Simulador: Detectado intento de modificacion/cancelacion/confirmacion en mock-test.');
+        
+        let action = 'reprogramada';
+        if (/cancelar/i.test(textMessage)) action = 'cancelada';
+        if (/confirmar/i.test(textMessage)) action = 'confirmada';
+        
+        const modReply = isEn
+          ? `I have successfully simulated the modification of your appointment. Status: **${action.toUpperCase()}**.\nNote: This is a simulation.`
+          : `He simulado exitosamente la modificación de tu cita. Nuevo estado: **${action.toUpperCase()}**.\nNota: Esta es una simulación.`;
+
+        return new Response(JSON.stringify({ reply: modReply }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       // Check for property details via ref number, e.g. ref041, 041, 1024
       let refMatch = textMessage.match(/ref\s*(\d+)/i) || textMessage.match(/\b(\d{1,4})\b/);
       if (refMatch) {
         const refNumber = parseInt(refMatch[1], 10);
         console.log('Simulador: Buscando propiedad por ref_number:', refNumber);
-        const result = await handleFunctionCall({ name: 'detalle_propiedad', args: { refNumber } }, supabaseClient, company_id, baseUrl);
+        const result = await handleFunctionCall({ name: 'detalle_propiedad', args: { refNumber } }, supabaseClient, company, baseUrl, locale);
         
         if (result.error || result.message) {
           const notFoundReply = isEn
@@ -593,7 +774,7 @@ serve(async (req) => {
 
       if (args.propertyType || args.operationType || args.city || args.isFurnished || args.hasPool || args.hasPowerGenerator || args.hasWaterTank || args.hasAirCon) {
         console.log('Simulador: Buscando propiedades por filtros:', args);
-        const searchResult = await handleFunctionCall({ name: 'buscar_propiedades', args }, supabaseClient, company_id, baseUrl);
+        const searchResult = await handleFunctionCall({ name: 'buscar_propiedades', args }, supabaseClient, company, baseUrl, locale);
 
         if (searchResult.error || searchResult.message || !Array.isArray(searchResult) || searchResult.length === 0) {
           const noneFoundReply = isEn
@@ -717,6 +898,9 @@ Cuando el usuario indique una fecha u hora de interés para una visita, debes in
    - En inglés: "(for example: 05/28/26 or Thursday at 4pm / 11pm)"
    Esto asegura que el usuario comprenda que puede usar formatos tradicionales o lenguaje natural.
 
+MUY IMPORTANTE SOBRE MODIFICACIONES DE CITAS:
+Si el usuario solicita cancelar, reprogramar o confirmar una cita existente, DEBES preguntarle su nombre y el número de teléfono con el que agendó la cita original (si no los ha proporcionado ya en el hilo de la conversación), y luego usar la herramienta 'modificar_solicitud_visita' pasándole esos datos y la acción correspondiente ('cancel', 'reschedule' o 'confirm').
+
 MUY IMPORTANTE SOBRE LOS LINKS Y FOTOS:
 Cuando el usuario te pida "ver fotos", "ver más detalles" o te pregunte por una propiedad, SIEMPRE debes incluir el link público de la propiedad en tu respuesta usando formato Markdown: [Ver fotos y detalles]({public_link}).
 Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo directamente.`;
@@ -787,7 +971,7 @@ Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo di
       console.log(`Function call detected (iteration ${iterations}):`, functionCall.name, functionCall.args);
       
       // Execute local function
-      const functionResult = await handleFunctionCall(functionCall, supabaseClient, company_id, baseUrl);
+      const functionResult = await handleFunctionCall(functionCall, supabaseClient, company, baseUrl, locale);
       
       // Append model's function call request to history
       contents.push(geminiData.candidates[0].content);

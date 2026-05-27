@@ -125,29 +125,43 @@ serve(async (req) => {
 
     const adminEmail = autoFallbackEmail;
     const clientEmail = email && typeof email === 'string' && email.includes('@') ? email : null;
-
-    const toRecipients = [{ email: adminEmail }];
-    if (clientEmail) {
-      toRecipients.push({ email: clientEmail });
-    }
-    
     const validAgentEmail = agentEmail && typeof agentEmail === 'string' && agentEmail.includes('@') ? agentEmail : null;
-    if (validAgentEmail && validAgentEmail !== adminEmail) {
-      toRecipients.push({ email: validAgentEmail });
-    }
 
     const sender = {
         name: displayCompany,
         email: "alveo.soporte@gmail.com"
     };
 
-    const brevoPayload = {
+    // 1. Enviar correo al Cliente (Prospecto)
+    if (clientEmail) {
+      const clientPayload = {
+          sender: sender,
+          to: [{ email: clientEmail }],
+          subject: `${t.subjectText} - ${displayCompany} [${propTitle}]`,
+          htmlContent: emailHtml
+      };
+      await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': BREVO_API_KEY,
+        },
+        body: JSON.stringify(clientPayload),
+      }).catch(e => console.error("Error sending to client:", e));
+    }
+
+    // 2. Enviar correo al Agente o Administrador
+    const agencyEmailTo = validAgentEmail ? validAgentEmail : adminEmail;
+    const agencyPayload = {
         sender: sender,
-        to: toRecipients,
-        subject: `${t.subjectText} - ${displayCompany} [${propTitle}]`,
+        to: [{ email: agencyEmailTo }],
+        subject: `[NUEVO LEAD] ${t.subjectText} - ${displayCompany} [${propTitle}]`,
         htmlContent: emailHtml
     };
-
+    
+    // Si el agente y el admin son distintos y queremos notificar a ambos, podríamos agregarlo en CC o hacer otro envío,
+    // pero la regla dice "al agente o al administrador".
     const resBrevo = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -155,7 +169,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'api-key': BREVO_API_KEY,
       },
-      body: JSON.stringify(brevoPayload),
+      body: JSON.stringify(agencyPayload),
     });
 
     const brevoData = await resBrevo.json().catch(() => ({ error: "Failed to parse Brevo response" }));
