@@ -163,20 +163,19 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
               ),
             ),
             Center(
-              child: SizedBox(
-                width: 600,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildFilterChip('all', l10n.get('filter_all')),
-                      _buildFilterChip('Disponible', l10n.get('Disponible')),
-                      _buildFilterChip('Reservado', l10n.get('Reservado')),
-                      _buildFilterChip('Vendido', l10n.get('Vendido')),
-                      _buildFilterChip('Alquilado', l10n.get('Alquilado')),
-                    ],
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 0.0,
+                  runSpacing: 8.0,
+                  children: [
+                    _buildFilterChip('all', l10n.get('filter_all')),
+                    _buildFilterChip('Disponible', l10n.get('Disponible')),
+                    _buildFilterChip('Reservado', l10n.get('Reservado')),
+                    _buildFilterChip('Vendido', l10n.get('Vendido')),
+                    _buildFilterChip('Alquilado', l10n.get('Alquilado')),
+                  ],
                 ),
               ),
             ),
