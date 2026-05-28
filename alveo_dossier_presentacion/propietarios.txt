@@ -1,0 +1,30 @@
+Módulo de Propietarios.
+El módulo de propietarios es el registro administrativo de las personas naturales o jurídicas que poseen los derechos de propiedad de los inmuebles gestionados por la agencia. Su correcto registro es un paso indispensable antes de poder publicar o editar fichas en el inventario.
+
+1. Pantalla del Listado de Propietarios (Vista General).
+Al ingresar a la sección de Propietarios desde el menú de navegación lateral, el usuario visualiza los siguientes elementos:.
+
+Listado Principal:. Muestra una lista vertical de todos los propietarios registrados por la agencia inmobiliaria en el sistema.
+Icono Identificador:. Un icono de silueta humana al inicio de cada fila.
+Nombre Completo:. Título en negrita con el nombre o razón social del propietario.
+Teléfono:. Subtítulo con el número de contacto directo del propietario.
+Botones de Edición y Eliminación:. Iconos de lápiz (Editar) y papelera (Eliminar) ubicados en el extremo derecho de cada fila.
+Botón Flotante (signo mas):. Botón circular azul en la esquina inferior derecha para agregar nuevos propietarios. Este botón se oculta automáticamente si la suscripción de la agencia se encuentra en estado Suspendido.
+2. Diálogo de Registro y Edición (Ventana Emergente).
+Al presionar el botón flotante o el icono del lápiz (Editar), se despliega una ventana emergente que contiene el siguiente formulario interactivo:.
+
+Nombre Completo:. Campo de texto obligatorio para el nombre completo del dueño o denominación comercial de la empresa.
+Teléfono:. Campo de texto numérico para registrar el número de contacto telefónico.
+Tipo de Persona:. Menú desplegable que permite clasificar legalmente al propietario entre las siguientes opciones:.
+Persona Natural (Opción predeterminada para ciudadanos individuales).
+Persona Jurídica (Para empresas, sociedades mercantiles o firmas comerciales).
+Ente Gubernamental (Para propiedades pertenecientes a organismos o ministerios públicos).
+Botones de Control:.
+Cancelar:. Cierra la ventana emergente sin guardar cambios.
+Guardar:. Valida los campos ingresados, escribe los datos en la base de datos central y refresca la lista de propietarios en tiempo real.
+3. Conceptos Operativos Fundamentales para el Vendedor.
+Los ejecutivos de ventas de alvéo deben conocer y saber explicar a los usuarios las siguientes reglas de funcionamiento y dependencias del sistema:.
+
+Pre-requisito para Cargar Inmuebles:. Un agente no puede registrar un nuevo inmueble en el sistema de forma huérfana. Al llenar la ficha de edición de una propiedad, el formulario exige de forma obligatoria seleccionar un propietario desde un menú desplegable. Por lo tanto, el propietario debe registrarse antes de cargar sus inmuebles en la plataforma.
+Privacidad:. Los propietarios se asocian de manera estricta y segura al ID de la empresa del usuario activo. Ninguna otra inmobiliaria ajena que use alvéo puede ver o consultar la lista de propietarios o sus datos de contacto (teléfonos), garantizando el cumplimiento de las políticas de aislamiento de datos corporativos (RLS).
+Control de Eliminación Segura:. Si un propietario tiene inmuebles asociados en estado activo, el sistema restringe o emite alertas de error al intentar eliminarlo, evitando que queden inmuebles sin propietario en la base de datos y preservando la integridad del historial de comisiones y cierres comerciales.

@@ -1,0 +1,36 @@
+Presentación de Ava: Agente de IA para Gestión Inmobiliaria 24-7 los 365 dias al año.
+Funcionamiento.
+Ava es un agente virtual integrado en la plataforma alvéo diseñado para interactuar con los clientes mediante texto y notas de voz. Su núcleo opera mediante modelos de procesamiento de lenguaje natural que le permiten identificar requerimientos y ejecutar acciones sobre la base de datos de la inmobiliaria.
+
+Sus funciones operativas incluyen:.
+
+1. Búsqueda de inventario:. Analiza las solicitudes de los clientes, filtra términos no relevantes y utiliza algoritmos de corrección ortográfica para localizar ciudades y propiedades específicas en la base de datos.
+2. Visualización ininterrumpida:. Presenta fichas de propiedades dentro de la ventana de chat. Al interactuar con ellas, el visitante accede a la galería multimedia mediante ventana emergente que preserva el historial de la conversación.
+3. Consulta activa de agenda:. Puede buscar citas y solicitudes activas registradas bajo el teléfono del cliente para recordarle sus detalles (fecha, hora, inmueble) en cualquier momento.
+
+El Nuevo Flujo Automatizado de Leads y Citas.
+
+El mayor aporte de Ava radica en la optimización del embudo de ventas-alquiler, simplificando la transición desde el primer contacto hasta el agendamiento formal, comparado con el proceso manual tradicional:.
+
+a continuacion el proceso manual de Solicitudes:..
+
+Cuando un visitante presiona en el boton "Me interesa", e ingresa sus datos y oprime enviar solicitud, se genera un liid. como sabes, un liid es una persona que ha demostrado interés por un inmueble), tanto el prospecto como el agente reciben un correo con la informacion del inmueble en ese momento. acto seguido, el agente debe contactar al cliente y plantear una cita para mostrar el inmueble. Si acuerdan una visita, el agente debe agendarla dentro del módulo "Agenda". se le presentará un buscador emergente con los leads pendientes. debe seleccionar el prospecto y completar la información de la cita. Al guardar, el sistema actualiza ese liid con los datos de la cita y lo marca como respondida. Independientemente de si se concretó la cita, el agente debe entrar al módulo solicitudes (Leads) y marcarlo como respondida o rechazada.
+El módulo de "Agenda" también permite registrar citas orgánicas. es decir, cuando un prospecto contacta espontáneamente o referido por un tercero, sin haber pasado por el formulario "Me interesa", ni por el Agente IA. En este caso, el agente puede crear una cita completamente nueva desde cero sin requerir asociarla a un Lead preexistente. De esta manera, nos aseguramos de que el diseño de la interfaz y de la base de datos siempre soporte la creación directa de citas sin obligar al usuario a tener un Lead previo en el sistema.
+
+a continuacion el proceso automatizado de Solicitudes Con Ava IA:..
+
+1. Atención y Calificación:. Ava atiende al cliente, solicita la información de interés e identifica si el cliente desea agendar una visita.
+2. Validación de Disponibilidad:. La IA revisa en milisegundos la base de datos para asegurar que no haya nada agendado para ese inmueble o agente en la fecha y hora sugerida.
+3. Registro Unificado :. Una vez confirmada la cita con el visitante, Ava registra simultáneamente la información de la solicitud (liid) y la de la Agenda en un único registro.
+4. Notificación y Visibilidad Inmediata:. El sistema envía automáticamente al agente el correo electrónico tradicional de "Nuevo liid", y el nuevo registro aparecerá instantáneamente en su lista de Leads y en su Agenda, todo listo para la visita.
+5. Autogestión de Cambios:. Si el cliente necesita cancelar o reprogramar la cita posteriormente, puede hacerlo directamente conversando con Ava, quien se encargará de actualizar los datos en el sistema automáticamente.
+6. Seguimiento Humano Integral:. Una vez concluida la visita, el control y seguimiento post-cita (cierre de la operacion), recae exclusivamente en la experiencia y trato personalizado del agente.
+
+Beneficios para el Equipo:.
+1. Atención y Autogestión Continua:. Ava no solo agenda inicialmente, sino que gestiona cancelaciones, consultas, confirmaciones y reprogramaciones 24/7.
+2. Automatización administrativa extrema:. Ava Elimina la necesidad de crear el liid, contactarlo por fuera, buscar el registro y vincularlo manualmente en la agenda. El flujo de trabajo no se interrumpe, porque recibes el mismo correo electrónico que ya estás acostumbrado a recibir. El flujo se notifica automáticamente al agente en caliente.
+3. Asignación precisa:. Ava Basa sus respuestas en el inventario real y en la disponibilidad documentada de los agentes, previniendo choques de horarios en las citas.
+
+Aportes al entorno alvéo:.
+1. Escalabilidad en la atención:. Ava Permite mantener tiempos de respuesta estables frente a incrementos repentinos en el volumen de consultas o campañas de marketing.
+2. Privacidad de la información - IA:. Su infraestructura de procesamiento opera bajo configuraciones de nivel empresarial, asegurando que los datos de los clientes y del inventario no son utilizados fuera del entorno.

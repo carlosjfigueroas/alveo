@@ -1,0 +1,54 @@
+Módulo de Inmuebles:.
+1. Pantalla del Listado de Inmuebles (Vista General).
+Al acceder al menú de Inmuebles, la pantalla muestra los siguientes elementos visuales y de control:..
+
+Indicador de Límite (en la Barra Superior):. Muestra el contador de inmuebles activos consumidos frente al límite contratado por la agencia.
+Buscador Superior:. Campo de texto para filtrar la lista.
+Botones de Filtro por Estado:.. Fila de botones selectores que permiten segmentar el listado con un toque en:. Todos, Disponible, Reservado, Vendido o Alquilado.
+Tarjeta de la Propiedad (Elementos visibles por cada registro):.
+Imagen miniatura:. Foto de portada del inmueble.
+Título:. Nombre identificador de la propiedad.
+Línea de información básica:. Muestra el número de referencia, el precio en la moneda configurada y el estado actual de disponibilidad.
+Etiqueta de Captador:. Recuadro azul que identifica al agente asignado como responsable del inmueble.
+Contadores de Interacción:. Muestra el número total de visualizaciones ("vistas") y reacciones ("likes") que ha recibido la propiedad en el portál público.
+Botones de Acción:. Iconos de lápiz (Editar) y papelera (Eliminar). En caso de que el inmueble pertenezca a otro agente y el usuario tenga rol de agente, estos botones se reemplazan por un icono de candado gris.
+Botón Flotante (signo suma):. Ubicado en la esquina inferior derecha para iniciar el registro de una propiedad. Si se ha alcanzado el límite de inmuebles de la suscripción, el botón muestra un candado y emite un aviso al presionarlo.
+
+2. Pantalla de Edición - Creación de Inmuebles:
+Al presionar el botón Flotante de creación (signo suma) o el icono de edición (lápiz), se despliega un formulario organizado en las siguientes secciones secuenciales:.
+
+Pestañas Superiores (Solo en modo Edición):. Permite alternar entre la pestaña de Datos (formulario de edición) y la pestaña de Historial (registro de cambios cronológicos de la propiedad).
+Campos de Información Básica:.
+Cuadro de texto para el Título del inmueble.
+Cuadro de texto multilínea para la Descripción detallada.
+Campo numérico para el Precio.
+Menú desplegable para seleccionar el Tipo de Inmueble (Casa, Apartamento, Local, Oficina, Terreno, Galpón, etc.).
+Sección de Ubicación y Geolocalización:.
+Campo de texto para la Dirección física.
+Tres menús desplegables encadenados para la ubicación geográfica:. País, Estado y Ciudad. Al seleccionar el País, se habilitan sus respectivos Estados, y al seleccionar el Estado se despliegan sus Ciudades correspondientes.
+Recuadro de Coordenadas de Mapa:. Muestra la latitud y longitud numéricas. Contiene dos botones de acción:.
+Autodetectar coordenadas (Icono de varita):. Lee la dirección escrita y calcula las coordenadas automáticamente.
+Asignar en mapa (Botón verde):. Abre un mapa interactivo a pantalla completa donde el usuario puede arrastrar y posicionar un pin en la ubicación exacta.
+Sección de Galería Multimedia:.
+Contador numérico de imágenes cargadas en relación al límite permitido.
+Botón para examinar y subir imágenes desde el dispositivo.
+Cuadrícula de fotos cargadas, donde se visualiza la etiqueta verde, "Foto principal¿¶´", en la primera imagen. Cada foto dispone de un menú de opciones para: Definir como principal o Eliminar.
+Selectores de Características Físicas e Industriales:.
+Campos numéricos para: Número de baños, puestos de estacionamiento, habitaciones, plantas (pisos) y año de construcción.
+Campos numéricos para el Área de construcción y Área del terreno.
+Interruptores para marcar características de la propiedad (Piscina, Aire acondicionado, Amoblado, Vigilancia, Aceptación de mascotas-niños, Terraza, Balcón, etc.).
+Para inmuebles comerciales:. Selectores para el estado de entrega (obra gris, semi-acabado, listo para ocupar), nivel de planta, y conexiones de servicios activos (electricidad, agua, aire acondicionado).
+Asignación de Agente y Propietario (Campos al final del formulario):.
+Menú desplegable para vincular el inmueble al perfil del Propietario (cargado previamente en el sistema).
+Menú desplegable para definir el Agente encargado del inmueble (por defecto se autocompleta con el agente que está operando en la sesión).
+Porcentaje de comisión acordado para la administración del inmueble.
+
+3. Conceptos Operativos Fundamentales para el Vendedor.
+Los ejecutivos de ventas de Alvéo deben conocer y explicar a los usuarios del sistema las siguientes reglas de funcionamiento del módulo:.
+
+1. Regla del Captador:. 
+El sistema permite a todos los agentes de la oficina ver la lista completa de propiedades de la agencia para poder ofrecerlas a sus clientes. Sin embargo, un agente solo puede modificar o eliminar los inmuebles que él mismo ha registrado (captado). Si intenta ingresar a una propiedad de otro agente, el sistema le bloqueará la edición mediante el icono de candado.
+2. Liberación de Espacio en la Suscripción:. 
+Las propiedades marcadas con estatus Vendido o Alquilado no se suman al conteo del límite de inmuebles permitidos en el plan de la agencia. Cambiar el estatus a uno de estos dos valores libera un cupo en el contador de la barra superior de forma automática, permitiendo registrar una nueva propiedad en estado Disponible sin costo adicional.
+3. Métricas para la Toma de Decisiones:. Los contadores de likes y vistas permiten al agente identificar cuáles propiedades del inventario están acumulando mayor interés del público en la web pública, sirviendo como indicador para ajustar precios o estrategias de difusión en redes sociales.
+4. Sincronización en Tiempo Real:. Cualquier modificación guardada en la ficha de un inmueble actualiza la base de datos central. La información se actualiza automáticamente en los teléfonos de otros agentes y en la página web pública de cara al cliente final sin necesidad de recargar la página.

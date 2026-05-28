@@ -1,0 +1,110 @@
+Bienvenido a Alvéo.      
+"Alvéo - Asistente Inmobiliario".
+TÉRMINOS A CONOCER POR EL EJECUTIVO DE VENTAS.
+•	Alvéo: Asi se llama la Aplicacion Web, está optimizada para usar en dispositivos moviles.
+•	SaaS (Software as a Service): Aplicación por suscripción. El cliente no "compra" la App, la alquila. Una plataforma siempre actualizada.
+•	PMS (Property Management System): Sistema de gestión. Es el motor que organiza inmuebles, clientes y cierres.
+•	Entorno Alvéo: El espacio privado y personalizado de cada agencia.
+•	Subdominio: La dirección web personalizada de la inmobiliaria (ejemplo: tuagencia.alveo.fyi). Es lo que permite que cada agencia tenga su propia oficina digital independiente.
+•	B2B (Business to Business): Ventas de empresa a empresa (Alvéo → Inmobiliaria).
+•	Escalabilidad: Alvéo crece con la inmobiliaria. Se van creando nuevas opciones.
+•	CRM (Customer Relationship Management) o gestión de las relaciones con los clientes, es una herramienta tecnológica diseñada para administrar todas las interacciones de una empresa con sus clientes actuales y potenciales.
+•	Dashboard: Panel de información. Su función principal es transformar información compleja en gráficos y métricas fáciles de entender para facilitar la toma de decisiones.
+Para ti como Ejecutivo de Alvéo, las redes sociales no son solo una herramienta de marketing, son tu oficina y tu principal argumento de venta. Es vital que, en su gestión comercial, comuniquen  un cambio de paradigma innegable: La búsqueda tradicional por navegador web ha muerto; hoy, las Redes Sociales son la verdadera y única puerta de entrada al mercado inmobiliario.
+Este es el pilar sobre el cual se sostiene Alvéo, y así deben transmitirlo a sus clientes:
+El Cambio de Paradigma: De la "Búsqueda" al "Descubrimiento".
+1. El Fin de la Era del Buscador
+Expliquen a las agencias que el comportamiento del consumidor ha evolucionado. El cliente ya no entra a un navegador a escribir "apartamento en venta"; ese proceso ha sido reemplazado. Ahora, el cliente descubre su futura propiedad mientras navega en su feed de Instagram, Facebook o TikTok. La red social es el nuevo buscador.
+2. Alvéo: El Destino Final del Tráfico Social.
+Si la red social es la puerta, Alvéo es la oficina. Nuestra plataforma no compite con Google; Alvéo está diseñada para recibir al usuario que viene de una interacción social. Un clic en una publicación o historia debe llevar a un entorno profesional, rápido y privado. Si una inmobiliaria sigue esperando que los clientes la encuentren "buscando en la web", está perdiendo el 90% del mercado activo.
+3. Captura de Intención en Tiempo Real
+La búsqueda en navegadores es pasiva; el descubrimiento en redes sociales es impulsivo y emocional. Alvéo capitaliza esa emoción al ofrecer una experiencia de usuario que conecta ese "descubrimiento" en la red social directamente con el WhatsApp del agente. Alvéo es la herramienta que convierte un scroll en una cita de venta.
+INTRODUCCIÓN:
+Alvéo es un Asistente Inmobiliario bajo modelo SaaS / PMS.
+Libertad total mediante subdominios propios, cuota fija y un soporte al usuario que garantiza que ninguna inmobiliaria se quede atrás por falta de asistencia técnica.
+BLOQUE 1: VENTA B2B (Para Dueños de Inmobiliarias).
+Objetivo: Convencer al dueño de la inmobiliaria de que Alvéo es su mejor inversión.
+•	Punto 1: Control de Marca y Modelo SaaS (PMS) .
+Mediante una cuota fija mensual o anual, tienes tu propio Entorno en un subdominio personalizado, ejemplo: inmobiliaria.alveo.fyi. Tú controlas los colores, los logos y la identidad, sin preocuparte por servidores ni mantenimiento. Es tu marca, potenciada por nuestra tecnología." 
+•	Punto 2: El Modelo de Crecimiento (Estrategia 1).
+Con nuestro programa de referidos B2B, si invitas a otra agencia, recibes descuentos vitalicios en tu suscripción y bonos de capacidades. Es decir, Al registrarse bajo la Estrategia 1, la inmobiliaria recibe beneficios inmediatos:
+-	Descuentos acumulativos en su suscripción.
+-	Bonos de capacidad (más de los 30 inmuebles o 10 fotos base).
+
+•	Punto 3: Eficiencia Operativa (The All-in-One) .
+- "Olvida los cuadernos y las hojas de cálculo. Aquí gestionas propietarios (Naturales, Jurídicos), agendas citas que aparecen en tu dashboard y controlas las comisiones de tus agentes con un clic. Es un CRM inmobiliario diseñado para cerrar ventas, no solo para listar inmuebles." 
+BLOQUE 2: Afiliados por Ejecutivos de Cuentas. 
+El Modelo de Crecimiento (Estrategia 2).
+La Estrategia 2, es la estrategia de Afiliados por Ejecutivos de Cuentas.
+Aquí te explico cómo funciona y por qué es clave para el negocio:
+Estrategia 2: Afiliados y Ejecutivos (Venta Directa).
+A diferencia de los referidos entre inmobiliarias, esta estrategia está diseñada para profesionales de la venta (Ejecutivos de Alvéo) que captan agencias de forma proactiva.
+1. ¿Quién es el protagonista?
+El Ejecutivo de Cuenta. No es un agente inmobiliario, sino un contratista de Alvéo cuyo objetivo es traer nuevas agencias a la plataforma. 
+2. El Link de Afiliado.
+El ejecutivo comparte un link de registro con un parámetro específico (ejemplo: alveo.fyi/register?ref=alias_ejecutivo).
+•	Normalización: El alias del ejecutivo que siempre se maneja en minúsculas.
+•	Persistencia: El sistema trackéa esta referencia para que, cuando la inmobiliaria se registre, quede vinculada a ese ejecutivo de por vida.
+3. El Beneficio para el Ejecutivo (Comisión Recurrente).
+Esta es la parte más potente para el vendedor:
+•	Recibe un porcentaje recurrente (actualmente definido en torno al 40%) de cada pago mensual o anual que realice la inmobiliaria que él captó.
+Para la Estrategia 2 (Ejecutivos), el proceso de envío del link está diseñado para ser profesional y directo. Así es como el vendedor lo gestiona:
+El Proceso de Envío del Ejecutivo.
+1. Construcción del Link.
+El vendedor no envía un link genérico, sino uno que contiene su "huella digital" (alias). El formato estándar es: .../register?ref=alias-del-vendedor.
+2. Canales de Envío.
+Debido a la naturaleza de Alvéo (enfocado en redes sociales), el ejecutivo suele enviar este link por:
+•	WhatsApp Directo: Es el canal principal. El link en WhatsApp.
+•	Bio de Redes Sociales: Los ejecutivos de cuenta suelen tener este link en sus perfiles de Instagram o LinkedIn.
+•	Correo Electrónico: Para propuestas formales.
+3. Automatización en el Dashboard (página de estadísticas).
+Aunque el vendedor puede construir el link manualmente conociendo su alias, la plataforma está diseñada para que en el Panel de Ejecutivo:
+•	Haya un botón de "Copiar mi link de afiliado".
+•	Este botón genere automáticamente la URL correcta basada en el slug del perfil del ejecutivo.
+4. Lo que ve el Cliente (El Gancho).
+Cuando el cliente hace clic en ese link enviado por el vendedor:
+La página de registro puede mostrar un mensaje de bienvenida personalizado: "Estás registrándote por invitación de [Nombre del Ejecutivo]".
+El sistema captura el referencia de la URL y lo inyecta en el campo oculto de la base de datos al crear la empresa.
+En resumen: El vendedor simplemente copia su link personalizado y lo envía por el canal donde esté conversando con el dueño de la inmobiliaria. La tecnología se encarga de que ese cliente "quede marcado" como suyo para siempre.
+4. Diferencia Clave con la Estrategia 1:
+•	Estrategia 1 (Referidos B2B): Es de "agencia a agencia". El beneficio es  descuento en cuotas y/o bonos de capacidad.
+•	Estrategia 2 (Afiliados): Es de "vendedor a agencia". El beneficio es una comisión económica directa para el vendedor.
+La Estrategia 2 es el combustible del equipo comercial de Alvéo para escalar la plataforma mediante una red de vendedores que ganan dinero mientras las agencias crecen. 
+BLOQUE 3: La Estrategia 3: Orgánica.
+La Estrategia 3: Orgánica, es el flujo de entrada natural de Alvéo. Es cuando un dueño de inmobiliaria descubre la plataforma por su cuenta (publicidad, SEO, o simplemente navegando por una agencia cliente) y decide registrarse sin que nadie lo haya invitado directamente.
+Aquí están sus pilares fundamentales:
+ Captación Orgánica (Self-Service).
+1. El Punto de Entrada: /register.
+Es una página pública diseñada para ser lo más simple posible. El objetivo es que la fricción sea mínima para que el usuario se "auto-sirva" el servicio.
+2. El Proceso de Aprobación (Request Flow).
+Al igual que en las otras estrategias donde ya hay un vínculo (un referido o un ejecutivo), en el registro orgánico tambien existe el link (/register) para llenar el formulario y crear la empresa de inmediato.
+La cuenta orgánica inicia con los valores estándar del sistema:
+•	Capacidad: Máximo 30 inmuebles.
+•	Multimedia: Máximo 10 fotos por inmueble.
+•	Tarifa: Precio base de lista (sin descuentos vitalicios hasta que invite a otra agencia).
+3. Motor de SEO y Marca.
+Para que esta estrategia funcione, Alvéo utiliza el Path URL Strategy. Esto permite que los motores de búsqueda indexen mejor los sitios, atrayendo a esos usuarios que buscan "PMS inmobiliario" o "Software para inmobiliarias" en Google.
+
+El "Modo Demo" como Gancho.
+El Modo demo.alveo.fyi. Esto sirve como vitrina para que el futuro cliente (visitante, estrategia 1-2 y 3), pruebe la velocidad, la lógica y en general, la experiencia con Alvéo antes de decidir ir a registrarse.
+BLOQUE 4: ENTRENAMIENTO PARA EL ADMINISTRADOR .
+Objetivo: Mostrar el poder de control y configuración.
+•	Paso 1: Configuración de Identidad (Menú: Editar Compañia) .
+- "Administrador, lo primero es tu marca. En 'Ajustes de Empresa', define tus colores primarios y sube tus logos. Aquí también configuras las reglas del juego: ¿cuánto retiene la agencia (Agency Split)? ¿Cuál es la comisión mensual de administración por defecto?" 
+•	Paso 2: Gestión de Talento (Menú: Usuarios) .
+- "Añade a tus agentes en segundos. Puedes activarlos o desactivarlos según su desempeño. Cada agente tendrá su propio acceso y podrá ver solo sus comisiones, mientras tú supervisas toda la operación global." 
+•	Paso 3: El Embudo de Ventas (Menú: Solicitudes & Agenda) .
+- "Cuando entra una Solicitud de un cliente, aparece en tu bandeja de Solicitudes (Leads). Asígnale un agente responsable de inmediato. Una vez que el agente cuadre la cita, esta aparecerá en la Agenda global, permitiéndote saber quién está mostrando qué y cuándo." 
+BLOQUE 5: GUION PARA EL AGENTE INMOBILIARIO .
+Objetivo: Mostrar la facilidad de captación y cierre.
+•	Paso 1: Captación de Precisión (Menu: inmuebles(Spaces) & propietarios(Owners) 
+- "Cargar un inmueble es cuestión de minutos. Vincula al propietario legal, detalla si es un townhouse o un ático, etc., y destaca la infraestructura crítica como la planta eléctrica o el tanque de agua. Estos detalles son los que cierran la venta en el portál." 
+•	Paso 2: Tu Cartera Digital Mis Comisiones (My Commissions) 
+- "No pierdas la cuenta de tus ganancias. En Mis Comisiones, verás el estado de tus pagos: qué está pendiente y qué ya ha sido liquidado por la administración. Transparencia total para que te enfoques en lo que mejor sabes hacer: vender." 
+BLOQUE 6: EL CIERRE.
+Objetivo: Eliminar el miedo al cambio tecnológico.
+•	Argumento Maestro: "Muchos dueños de inmobiliarias temen que la tecnología se vuelva una carga. En Alvéo creemos que no existen aplicaciones difíciles, solo herramientas sin soporte al usuario. Al suscriberse a Alvéo, no estás solo con un manual; tienes un equipo de respaldo que garantiza que tu Asistente Inmobiliario esté siempre operando al 100%. Tu única preocupación debe ser vender; nosotros nos encargamos de que la tecnología sea tu mayor aliado."
+•	Eslogan Final: "Alvéo - Asistente Inmobiliario. Soporte real para resultados reales."
+
+Con esta introducción estamos listo para entrar a la diversión. Búscate un café o algo más fuerte y comencemos...
+Let's do it!

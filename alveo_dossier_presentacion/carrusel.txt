@@ -1,0 +1,90 @@
+1.
+2.
+3.
+4.
+5.
+
+
+Configuración del Carrusel Principal — alvéo.
+
+Módulo:. Panel de Administración. Carrusel.
+Este tutorial explica cómo configurar el Carrusel Principal del portál de tu agencia en alvéo.
+
+El carrusel es la galería de imágenes que aparece en la página de inicio del portál. Puede mostrar hasta diez posiciones. Cada posición contiene una imagen y, de forma opcional, una acción que se ejecuta cuando el visitante hace clic sobre ella.
+
+A continuación veremos cómo acceder al módulo, cómo configurar cada posición y cuáles son las opciones globales disponibles.
+
+Acceso al Módulo de Carrusel.
+Inicia sesión con tu usuario Administrador. En el menú lateral, localiza la opción "Carrusel" y selecciónala.
+
+
+Se abrirá la pantalla "Carrusel Principal", que muestra una lista con las diez posiciones disponibles, numeradas del 1 al 10.
+
+Por cada posición se muestra:.
+
+Una miniatura de la imagen actualmente cargada. Si la posición no tiene imagen, se muestra un ícono de marcador de posición.
+El nombre interno del archivo almacenado en el sistema.
+Un indicador de acción, cuando la posición tiene una configurada: ícono de enlace para URLs externas, o ícono de propiedad para referencias de inmuebles.
+
+Para editar una posición, selecciona el botón: "Cambiar". ubicado a la derecha de la fila correspondiente.
+
+Imagen.
+
+En la parte superior de la pantalla de detalle se muestra una vista previa de la imagen actual de esa posición. Si la posición no tiene imagen asignada, se indicará con el mensaje. "Sin imagen actual".
+
+Para asignar o reemplazar la imagen, presiona el botón. "Seleccionar imagen". Se abrirá el selector de archivos del dispositivo. Elige el archivo correspondiente.
+
+Una vez seleccionado, la imagen se mostrará en la vista previa. Si el archivo supera los 100 KB, el sistema lo comprimirá automáticamente antes de subirlo.
+
+Cuando la imagen está lista para guardar, aparecerá el indicador. "Imagen seleccionada ✓".
+
+Recomendación técnica: Utiliza imágenes en orientación horizontal con una resolución mínima de 1280 × 720 píxeles para garantizar una visualización correcta en todos los dispositivos.
+
+Acción al hacer clic.
+El campo "Acción al hacer click" es opcional. Permite definir qué ocurre cuando el visitante hace clic sobre la imagen del carrusel.
+
+Existen tres opciones:.
+
+Primera:. Referencia de un inmueble. Escribe el número de referencia del inmueble (ejemplo:. 032). Al hacer clic, el visitante será dirigido directamente a la ficha de ese inmueble. El sistema mostrará el indicador "Inmueble Referencia 032".
+
+segunda:. Enlace extérno. Escribe una URL completa (ejemplo:. https://wa.me/instagram). Al hacer clic, el visitante será redirigido a esa dirección. El sistema mostrará el indicador "Link extérno".
+
+tercera:. Sin acción. Si el campo se deja vacío, la imagen se mostrará en el carrusel sin ejecutar ninguna acción al hacer clic.
+
+El sistema valida el formato en tiempo real. Si aparece el indicador  "Formato no reconocido", verifica que la referencia sea numérica o que el enlace comience con https://.
+
+Guardar.
+Una vez configurada la imagen y la acción, presiona el botón "Guardar".
+
+El sistema confirmará la operación con el mensaje: "Posición guardada con éxito" y regresará automáticamente a la lista de posiciones, donde podrás verificar la miniatura actualizada.
+
+Activar o Desactivar el Carrusel.
+
+El carrusél cuenta con un interruptor global que se configura desde la pantalla "Editar Agencia".
+
+El interruptor "carrusél Principal" determina si la galería se muestra o no en la página de inicio del portál. Desactivarlo es útil durante el proceso de carga de imágenes, para evitar que el portál muestre posiciones sin contenido.
+
+Estrategia del carrusél .
+En la misma sección de configuración se encuentra el selector: "Estrategia del Carrusel", con dos modos disponibles:.
+
+Manual (Imágenes Subidas).
+El carrusel muestra las imágenes cargadas manualmente en cada posición, en el orden definido. El administrador tiene control directo sobre el contenido visual del portál.
+
+Automático (Inmuebles Populares).
+El sistema selecciona automáticamente las fotografías de los inmuebles con mayor número de interacciones (like). El carrusel se actualiza dinámicamente según la actividad del inventario, sin intervención manual.
+
+Selecciona la estrategia adecuada y guarda los cambios.
+
+Recomendaciones de Uso.
+Prioriza la primera posición. Es la primera imagen que visualiza el visitante al ingresar al portál. Asigna a esta posición el contenido de mayor relevancia para tu agencia.
+
+Mantén coherencia visual. Imágenes con proporciones y estilos similares generan una experiencia de navegación más uniforme.
+
+Usa las acciones para dirigir tráfico. Si tienes inmuebles prioritarios, configura sus referencias en las primeras posiciones del carrusel para facilitar el acceso directo desde la página de inicio.
+
+Actualiza el contenido con regularidad. Mantener el carrusel con información vigente refleja la actividad de la agencia ante los visitantes.
+
+Verifica la visualización en móvil. Después de cada actualización, revisa el portál desde un dispositivo móvil para confirmar que las imágenes se muestran correctamente.
+
+
+alvéo — Asistente Inmobiliario

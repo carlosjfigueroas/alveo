@@ -745,4 +745,21 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 1. **Geocodificación Automática**: Al presionar el botón de autodetectar (icono de varita), el sistema debe consultar la API de geocodificación concatenando la dirección escrita, ciudad, estado y país para ubicar las coordenadas de forma aproximada.
 2. **Ajuste de Precisión Manual**: Siempre se debe proveer el botón "Asignar en mapa" que abra un diálogo flotante (`LocationPickerDialog`) con un mapa interactivo para que el agente mueva físicamente el pin y lo posicione en la coordenada exacta de la fachada de la propiedad, garantizando que el mapa final de cara al cliente sea 100% verídico.
 
+---
+
+### Regla #111: Heredabilidad de Comisiones por Defecto (Default Commission Policy)
+**Contexto**: Las comisiones definidas en la configuración global de la empresa actúan como plantilla base al crear nuevos inmuebles para reducir la transcripción repetitiva de datos de comisiones de la oficina.
+**Regla**:
+1. **Plantilla Base Global**: Al registrar un nuevo inmueble en el inventario, el formulario de creación completará de forma automática estos valores heredados por defecto desde los ajustes de la empresa.
+2. **Libertad de Sobrescritura**: El agente captador siempre conserva la autoridad de modificar y ajustar estos valores de forma personalizada en la ficha individual de la propiedad según los acuerdos de corretaje específicos firmados con el cliente.
+
+---
+
+### Regla #112: Consistencia Matemática en Reparto de Comisiones (Split Complementarity)
+**Contexto**: Para evitar descuadres contables entre la administración de la agencia y los vendedores en los cálculos de honorarios de cierre de ventas.
+**Regla**:
+1. **Principio de Complementariedad Estricta**: El reparto de comisiones de venta entre la Agencia y el Agente se rige por un auto-cálculo obligatorio en el que el porcentaje del agente es exactamente `100 - Porcentaje de la Agencia`.
+2. **Bloqueo Preventivo**: El campo del porcentaje del agente es de solo lectura y se calcula dinámicamente en tiempo real para evitar ingresos manuales contradictorios u omisiones que provoquen sumas diferentes a 100%.
+
+
 
