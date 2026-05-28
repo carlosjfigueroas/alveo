@@ -718,3 +718,31 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 1. **Estructura de Visualización**: El chat con Ava en la app de Flutter se visualiza dentro de un `DraggableScrollableSheet` contenido en un modal bottom sheet (`showModalBottomSheet`), adaptando sus dimensiones al dispositivo: 85% a 95% de alto en móviles, y hasta 70% en pantallas de escritorio.
 2. **Llamada Síncrona Directa**: El método de inicio de grabación `AudioRecorder.start()` se debe invocar directamente y de forma síncrona dentro del callback `onPressed` o `onTap` del botón de grabación en la UI principal.
 3. **Prohibición de Delegación Asíncrona**: Queda terminantemente prohibido diferir la grabación con `Future.microtask`, llamadas asíncronas demoradas o delegar el disparo inicial a un estado secundario tardío, asegurando que se preserve intacto el "transient user-activation context" que los navegadores modernos exigen para conceder permisos mediante `getUserMedia()`.
+
+---
+
+### Regla #108: Payload de Correo Transaccional — `propertyDetails` Obligatorio (No Raw UUIDs)
+**Contexto**: La Edge Function `send-budget-email` usa el arreglo `propertyDetails` para mostrar el nombre del inmueble en el correo. Si una Edge Function invocadora (como `alveo-ai-chat`) solo envía `propertyIds` (arreglo de UUIDs) sin incluir `propertyDetails`, el template de correo cae al fallback y muestra el UUID crudo (`3422050c-9218-...`) en el campo **Inmueble**, lo que es técnico e ilegible para el usuario final.
+**Regla**:
+1. **`propertyDetails` Obligatorio**: Toda invocación a `send-budget-email` (ya sea desde `alveo-ai-chat`, el frontend Flutter u otra Edge Function) debe incluir el arreglo `propertyDetails` con al menos un objeto que contenga: `title` (en formato `Ref: XXX - Título del Inmueble`), `type`, `operation` y `price`.
+2. **Formato de Título Estandarizado**: El campo `title` dentro de `propertyDetails` debe formatearse como `Ref: ${String(refNum).padStart(3, '0')} - ${property.title}` para garantizar consistencia visual en todos los correos transaccionales de la plataforma.
+3. **SELECT Completo de Propiedad**: Toda consulta a la tabla `properties` que preceda el disparo de un correo debe seleccionar mínimamente: `id, title, type, operation_type, price, listing_agent_id, ref_number`. Omitir campos como `type` o `price` impide construir un `propertyDetails` completo.
+4. **Fallback sin UUIDs**: El template de `send-budget-email` nunca debe mostrar UUIDs como fallback de `propertyIds`. El fallback correcto es el label genérico localizado (`"Inmueble"` / `"Property"`).
+
+---
+
+### Regla #109: Compresión Obligatoria de Multimedia antes de Carga (SaaS Storage Safety)
+**Contexto**: Toda imagen que un agente intente subir a la galería de un inmueble debe pasar por un proceso de compresión local en el cliente antes de ser enviada al almacenamiento en la nube (Supabase Storage).
+**Regla**:
+1. **Compresión Local en Cliente**: Previene que los usuarios suban fotografías crudas de cámaras móviles (que pueden pesar entre 5MB y 15MB cada una).
+2. **Ahorro e Integridad SaaS**: Ahorra costos de almacenamiento en el plan SaaS, reduce el consumo de datos de red móvil del agente y acelera drásticamente el tiempo de carga de las imágenes en el portal público de cara al cliente final.
+
+---
+
+### Regla #110: Geolocalización Híbrida Asistida por Dirección (Geocoding & Map Coordinates)
+**Contexto**: Para dar cumplimiento a la **Regla #56 (Ubicación Exacta)**, el editor de inmuebles debe ofrecer un mecanismo híbrido para la obtención de coordenadas de latitud y longitud.
+**Regla**:
+1. **Geocodificación Automática**: Al presionar el botón de autodetectar (icono de varita), el sistema debe consultar la API de geocodificación concatenando la dirección escrita, ciudad, estado y país para ubicar las coordenadas de forma aproximada.
+2. **Ajuste de Precisión Manual**: Siempre se debe proveer el botón "Asignar en mapa" que abra un diálogo flotante (`LocationPickerDialog`) con un mapa interactivo para que el agente mueva físicamente el pin y lo posicione en la coordenada exacta de la fachada de la propiedad, garantizando que el mapa final de cara al cliente sea 100% verídico.
+
+

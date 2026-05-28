@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cccpr_inmobiliaria/main.dart';
+import 'package:alveo_inmobiliaria/main.dart';
 
 void main() {
   testWidgets('App starts smoke test', (WidgetTester tester) async {
