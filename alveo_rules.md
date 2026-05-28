@@ -758,8 +758,18 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 ### Regla #112: Consistencia Matemática en Reparto de Comisiones (Split Complementarity)
 **Contexto**: Para evitar descuadres contables entre la administración de la agencia y los vendedores en los cálculos de honorarios de cierre de ventas.
 **Regla**:
-1. **Principio de Complementariedad Estricta**: El reparto de comisiones de venta entre la Agencia y el Agente se rige por un auto-cálculo obligatorio en el que el porcentaje del agente es exactamente `100 - Porcentaje de la Agencia`.
+1. **Principio de Complementariedad Estricta**: El reparto de comisiones de venta entre la Agencia y el Agente se rige por un principio de complementariedad estricta (el porcentaje de los agentes es exactamente `100 - Porcentaje de la Agencia`).
 2. **Bloqueo Preventivo**: El campo del porcentaje del agente es de solo lectura y se calcula dinámicamente en tiempo real para evitar ingresos manuales contradictorios u omisiones que provoquen sumas diferentes a 100%.
+
+---
+
+### Regla #113: Estrategias de Crecimiento y Atribución Comercial de Afiliados (Affiliate & Referral Commercial Logic)
+**Contexto**: Para evitar desvíos o errores en la asignación de recompensas, el sistema gestiona tres flujos de registro completamente aislados bajo lógicas comerciales distintas.
+**Regla**:
+1. **Referidos B2B (`showReferralMenu`)**: Es el canal exclusivo de agencias activas para invitar a otras inmobiliarias aliadas mediante un enlace o correo personalizado. **Solo este flujo otorga beneficios mutuos** (descuentos recurrentes de por vida en la suscripción y expansión de capacidad de inmuebles activos en la nube) a la agencia que refiere.
+2. **Afiliados Comerciales (Ejecutivos)**: Es el canal exclusivo para contratistas o vendedores corporativos de Alveo, quienes captan nuevas agencias compartiendo un enlace personal de comisiones sobre la facturación de las empresas vinculadas a su alias.
+3. **Auto-Registro Orgánico (`showOrganicAffiliate`)**: Es el banner promocional discreto al pie del catálogo de cara al público general. **Este flujo es 100% orgánico y autogestionado**; no asocia comisiones automáticas a la agencia anfitriona ni a vendedores, aunque el nuevo usuario puede seleccionar voluntariamente el origen en el formulario público `/register`. Desactivar este interruptor asegura que la web pública quede 100% libre de publicidad o marcas de Alveo.
+
 
 
 
