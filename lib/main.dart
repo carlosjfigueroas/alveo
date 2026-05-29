@@ -80,12 +80,32 @@ class AlveoApp extends StatelessWidget {
       ],
       onGenerateRoute: (settings) {
         final String routeName = settings.name ?? '';
+        debugPrint('[ROUTER] onGenerateRoute name: $routeName');
         // Normalizar la ruta para que siempre empiece con / y no tenga slash al final
         String normalizedPath = routeName.startsWith('/') ? routeName : '/$routeName';
         if (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
           normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
         }
         
+        if (normalizedPath == '/' || normalizedPath.isEmpty) {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (context) => companyProvider.isLoading
+                ? const Scaffold(
+                    backgroundColor: AppThemes.primaryGreen,
+                    body: Center(child: CircularProgressIndicator(color: Colors.white)),
+                  )
+                : (companyProvider.isSuspended ? const SuspendedScreen() : const HomeScreen()),
+          );
+        }
+
+        if (normalizedPath == '/register') {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => const RegisterScreen(),
+          );
+        }
+
         final uri = Uri.parse(normalizedPath);
         final segments = uri.pathSegments;
         
@@ -93,6 +113,7 @@ class AlveoApp extends StatelessWidget {
         if (segments.length >= 2 && segments.first == 'agent') {
           final slug = segments[1];
           final propertyRef = segments.length > 2 ? segments[2] : null;
+          debugPrint('[ROUTER] Matched Agent Route - slug: $slug, propertyRef: $propertyRef');
           return MaterialPageRoute(
             settings: settings,
             builder: (_) => AgentRouteWrapper(slug: slug, propertyRef: propertyRef),
@@ -112,13 +133,6 @@ class AlveoApp extends StatelessWidget {
           final potentialAlias = segments[0];
           const reserved = ['register', 'login', 'faq', 'about', 'admin'];
           
-          if (potentialAlias.toLowerCase() == 'register') {
-            return MaterialPageRoute(
-              settings: settings,
-              builder: (_) => const RegisterScreen(),
-            );
-          }
-          
           if (!reserved.contains(potentialAlias.toLowerCase())) {
             return MaterialPageRoute(
               settings: settings,
@@ -128,15 +142,6 @@ class AlveoApp extends StatelessWidget {
         }
         
         return null;
-      },
-      routes: {
-        '/': (context) => companyProvider.isLoading
-            ? const Scaffold(
-                backgroundColor: AppThemes.primaryGreen,
-                body: Center(child: CircularProgressIndicator(color: Colors.white)),
-              )
-            : (companyProvider.isSuspended ? const SuspendedScreen() : const HomeScreen()),
-        '/register': (context) => const RegisterScreen(),
       },
     );
   }

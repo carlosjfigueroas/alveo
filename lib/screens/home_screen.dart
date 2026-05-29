@@ -113,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _targetPropertyRef = widget.initialPropertyRef;
+    debugPrint('[HOME] initState - _targetPropertyRef: $_targetPropertyRef');
     _loadProperties();
     
     // Capturar parámetros de referido de la URL (Estrategias 1 y 2)
@@ -838,6 +839,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appProvider = context.watch<AppProvider>();
     final companyProv = context.watch<CompanyProvider>();
+    debugPrint('[HOME] build - _targetPropertyRef: $_targetPropertyRef, widget.initialPropertyRef: ${widget.initialPropertyRef}');
 
     // Si el contexto de agente cambia, recargamos propiedades para asegurar 
     // que el carrusel y filtros estén sincronizados

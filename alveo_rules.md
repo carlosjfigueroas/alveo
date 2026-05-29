@@ -778,6 +778,8 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 1. **Bypass del Filtro de Portafolio**: Si la URL contiene una referencia directa a una propiedad (`_targetPropertyRef != null`), el sistema debe omitir obligatoriamente el filtro de exclusión por agente (`listingAgentId == agentContext.id`). Esto permite que la propiedad especificada cargue y se muestre con éxito al visitante.
 2. **Preservación de la Marca y Contacto**: Aunque la propiedad pertenezca originalmente a otro captador, la sesión de navegación del visitante debe mantener al agente del enlace (`agentContext`) como el gestor activo en pantalla (foto de perfil, WhatsApp y correo de contacto), garantizando que cualquier lead generado se enrute y asigne a su bandeja privada.
 3. **Reactivación del Portafolio Personal**: Si el usuario decide cerrar la visualización detallada del inmueble o presiona el botón para limpiar la búsqueda de la referencia, el sistema re-activará el filtro por defecto, volviendo a mostrar únicamente el inventario captado por el agente.
+4. **Caso de Atribución Cruzada Histórico (`/agent/nicolas/ref048`)**: El inmueble `ref048` ("Local para Restaurante con Terraza") es propiedad y captación del agente/administrador Ricardo Cepeda. Sin embargo, al ingresar mediante el link del agente dependiente Nicolas Wayne (`/agent/nicolas/ref048`), el sistema debe realizar el bypass y mostrar con éxito la propiedad bajo la identidad corporativa y los datos de contacto y captación de prospectos (leads) de Nicolas Wayne, atribuyéndole a Nicolas cualquier contacto generado sobre esa propiedad durante esa sesión de navegación.
+
 
 
 
