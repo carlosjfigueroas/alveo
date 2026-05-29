@@ -8,7 +8,9 @@ Este documento describe los tres canales de adquisición de clientes configurado
 Este canal está estructurado para que las inmobiliarias actuales inviten a colegas del sector a unirse a la plataforma.
 
 *   **Mecanismo:** La agencia envía un enlace de invitación desde su panel de control a una agencia extérna. Cuando el destinatario utiliza este enlace para crear su cuenta, el sistema vincula automáticamente a ambas empresas.
-*   **Beneficios Comerciales:** La agencia que envió la invitación recibe incentivos directos en su facturación. Estos beneficios se aplican mediante reducciones recurrentes en su cuota mensual de suscripción y expansiones en el límite de capacidad de inmuebles que puede publicar en su catálogo.
+*   **Beneficios Comerciales:** La agencia que envió la invitación recibe incentivos directos y cuantificables en su cuenta, divididos en dos áreas:
+    1.  **Reducciones recurrentes (Económico):** Obtienen descuentos que se aplican automáticamente sobre el pago de su cuota mensual de suscripción a la plataforma.
+    2.  **Expansiones de límite (Operativo):** El sistema aumenta de forma automatizada la capacidad de almacenamiento y la cantidad máxima de inmuebles que la agencia anfitriona tiene permitido publicar o alojar en la nube.
 
 ---
 
