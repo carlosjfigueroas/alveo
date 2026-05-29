@@ -317,6 +317,22 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
   late VideoPlayerController _controller;
   bool _initialized = false;
   String? _errorMessage;
+  bool _isFullscreen = false;
+
+  void _videoListener() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (d.inHours > 0) {
+      return '${d.inHours}:$minutes:$seconds';
+    }
+    return '$minutes:$seconds';
+  }
 
   @override
   void didChangeDependencies() {
@@ -327,6 +343,7 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.video.videoUrl))
         ..initialize().then((_) {
           if (mounted) {
+            _controller.addListener(_videoListener);
             setState(() {
               _initialized = true;
               _controller.play();
@@ -344,117 +361,173 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
 
   @override
   void dispose() {
+    if (_initialized) {
+      _controller.removeListener(_videoListener);
+    }
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Dialog(
       backgroundColor: Colors.black,
+      insetPadding: _isFullscreen ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(_isFullscreen ? 0 : 16),
       ),
       clipBehavior: Clip.antiAlias,
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (_initialized)
-              VideoPlayer(_controller)
-            else if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-              )
-            else
-              const CircularProgressIndicator(color: Colors.white),
+      child: Container(
+        width: _isFullscreen ? size.width : null,
+        height: _isFullscreen ? size.height : null,
+        constraints: _isFullscreen ? null : const BoxConstraints(maxWidth: 900),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (_initialized)
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  ),
+                )
+              else if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              else
+                const CircularProgressIndicator(color: Colors.white),
 
-            // Controls overlay
-            if (_initialized)
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (_controller.value.isPlaying) {
-                        _controller.pause();
-                      } else {
-                        _controller.play();
-                      }
-                    });
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Stack(
-                      children: [
-                        if (!_controller.value.isPlaying)
-                          const Center(
-                            child: CircleAvatar(
-                              backgroundColor: Colors.black54,
-                              radius: 30,
-                              child: Icon(Icons.play_arrow, size: 40, color: Colors.white),
-                            ),
-                          ),
-                        // Bottom bar with play progress
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            color: Colors.black45,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _controller.value.isPlaying ? _controller.pause() : _controller.play();
-                                    });
-                                  },
-                                ),
-                                Expanded(
-                                  child: VideoProgressIndicator(
-                                    _controller,
-                                    allowScrubbing: true,
-                                    colors: const VideoProgressColors(
-                                      playedColor: Colors.green,
-                                      bufferedColor: Colors.white30,
-                                      backgroundColor: Colors.white12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+              // Buffering indicator overlay
+              if (_initialized && _controller.value.isBuffering)
+                Container(
+                  color: Colors.black26,
+                  child: const Center(
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      radius: 30,
+                      child: CircularProgressIndicator(color: Colors.green),
                     ),
                   ),
                 ),
-              ),
 
-            // Close button top-right
-            Positioned(
-              top: 12,
-              right: 12,
-              child: CircleAvatar(
-                backgroundColor: Colors.black54,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
+              // Controls overlay
+              if (_initialized)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (_controller.value.isPlaying) {
+                          _controller.pause();
+                        } else {
+                          _controller.play();
+                        }
+                      });
+                    },
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Stack(
+                        children: [
+                          if (!_controller.value.isPlaying && !_controller.value.isBuffering)
+                            const Center(
+                              child: CircleAvatar(
+                                backgroundColor: Colors.black54,
+                                radius: 30,
+                                child: Icon(Icons.play_arrow, size: 40, color: Colors.white),
+                              ),
+                            ),
+                          // Bottom bar with play progress and timers
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              color: Colors.black87,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${_formatDuration(_controller.value.position)} / ${_formatDuration(_controller.value.duration)}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      IconButton(
+                                        icon: Icon(
+                                          _isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isFullscreen = !_isFullscreen;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                                    child: VideoProgressIndicator(
+                                      _controller,
+                                      allowScrubbing: true,
+                                      colors: const VideoProgressColors(
+                                        playedColor: Colors.green,
+                                        bufferedColor: Colors.white30,
+                                        backgroundColor: Colors.white12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Close button top-right
+              Positioned(
+                top: 12,
+                right: 12,
+                child: CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
