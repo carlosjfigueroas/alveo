@@ -783,6 +783,11 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
     - **Ruteo de Deep Links (Web)**: Flutter evalúa la jerarquía de las rutas parte por parte (`/`, `/agent`, `/agent/nicolas`, `/agent/nicolas/ref048`). Es mandatorio mantener la palabra `'agent'` dentro de la constante `reserved` en `onGenerateRoute` de `main.dart`. Si no se incluye, el evaluador asumirá erróneamente que `'agent'` es un alias de vendedor (`SalespersonRouteWrapper`), provocando una redirección silenciosa y destructiva hacia `/` que limpia la referencia del inmueble.
     - **Gestión de Estado**: El control de cambios de agente (`_lastAgentId`) y la petición de bypass (`_targetPropertyRef`) jamás deben mutarse ni validarse directamente dentro del método `build()` del widget, ya que en producción `dart2js` esto ocasiona lecturas obsoletas del provider. Esta validación debe ocurrir siempre en `didChangeDependencies()`.
 
+---
+
+### Regla #115: Comunicación Objetiva (Tono de Asistencia)
+**Regla**: El asistente virtual (agente) debe explicar las características, código y estrategias de la plataforma de forma objetiva, técnica y descriptiva. Se debe evitar el uso de adjetivos promocionales, valorativos o subjetivos (ej. "poderosa", "excelente", "fantástica"). La información proporcionada debe centrarse estrictamente en el mecanismo de funcionamiento, la lógica de negocio subyacente y los resultados directos del sistema.
+
 
 
 
