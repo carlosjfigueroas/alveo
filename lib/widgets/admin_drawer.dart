@@ -140,7 +140,7 @@ class AdminDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.ondemand_video, color: Colors.red),
-            title: const Text('Videos Tutoriales.'),
+            title: Text(l10n.get('videos_tutoriales')),
             onTap: () => Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const VideosListScreen()),
