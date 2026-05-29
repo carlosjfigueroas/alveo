@@ -11,14 +11,15 @@ Este canal está estructurado para que las inmobiliarias actuales inviten a cole
 *   **Beneficios Comerciales:** La agencia que envió la invitación recibe incentivos directos y cuantificables en su cuenta, divididos en dos áreas:
     1.  **Reducciones recurrentes (Económico):** Obtienen un descuento de **$1.00 USD mensual** por cada agencia invitada que mantenga una suscripción activa. Este descuento es acumulativo hasta un máximo del 25% del valor total de su plan base.
     2.  **Expansiones de límite (Operativo):** El sistema aumenta de forma automatizada la capacidad de almacenamiento otorgando **+2 Inmuebles y +2 Fotos extra** sin límite acumulable por cada agencia referida.
+    3.  **Opciones disponibles:** Si una agencia prefiere no mostrar Referidos B2B en su web, puede desactivarlo desde su panel de configuración.    
 
 ---
 
 ## 2. Afiliados Comerciales (Ejecutivos Vendedores-soporte).
 Este canal es de uso exclusivo para el equipo de ventas de Alvéo.
 
-*   **Mecanismo:** A cada vendedor se le asigna un enlace personalizado con su alias único (ejemplo: `https://alveo.fyi/agent/nicolas`). Al compartir este enlace con prospectos, la plataforma incrusta el identificador del ejecutivo de manera transparente en la sesión del visitante. Cuando el prospecto completa su registro de agencia, su empresa queda "etiquetada" y vinculada de forma vitalicia al perfil del vendedor en la base de datos.
-*   **Beneficios Comerciales:** El sistema automatiza completamente la liquidación de comisiones. Por cada pago de suscripción mensual o anual que realice la agencia, el ejecutivo recibe de forma directa y recurrente un porcentaje sustancial del ingreso (parametrizado en un **40% de la facturación neta** de la cuenta). Estos fondos son calculados y transferidos periódicamente a la cuenta del afiliado sin requerir intervención manual, garantizando una fuente de ingresos continuos a largo plazo por cada agencia que mantenga activa en el sistema.
+*   **Mecanismo:** A cada vendedor se le asigna un enlace personalizado con su alias único (ejemplo: `alveo.fyi/agent/nicolas`). Al compartir este enlace con prospectos, la plataforma incrusta el identificador del ejecutivo de manera transparente en la sesión del visitante. Cuando el prospecto completa su registro de agencia, su empresa queda "etiquetada" y vinculada de forma vitalicia al perfil del vendedor en la base de datos.
+*   **Beneficios Comerciales:** El sistema automatiza completamente la liquidación de comisiones. Por cada pago de suscripción mensual o anual que realice la agencia, el ejecutivo recibe de forma directa y recurrente un porcentaje sustancial del ingreso (parametrizado en un **40% de la facturación neta** de la cuenta). Estos fondos son calculados y transferidos periódicamente a la cuenta del afiliado, garantizando una fuente de ingresos continuos a largo plazo por cada agencia que mantenga activa en el sistema.
 
 ---
 
