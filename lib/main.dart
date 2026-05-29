@@ -131,7 +131,7 @@ class AlveoApp extends StatelessWidget {
         // Manejar posibles alias de vendedores en la raíz (Estrategia 2)
         if (segments.length == 1) {
           final potentialAlias = segments[0];
-          const reserved = ['register', 'login', 'faq', 'about', 'admin'];
+          const reserved = ['register', 'login', 'faq', 'about', 'admin', 'agent'];
           
           if (!reserved.contains(potentialAlias.toLowerCase())) {
             return MaterialPageRoute(

@@ -198,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadProperties() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final companyId = Provider.of<CompanyProvider>(
@@ -224,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .toList();
 
       // Si estamos en modo agente, filtramos también el carrusel popular
+      if (!mounted) return;
       final appProvider = Provider.of<AppProvider>(context, listen: false);
       if (appProvider.agentContext != null) {
         topProperties = topProperties.where((p) => p.listingAgentId == appProvider.agentContext!.id).toList();
@@ -246,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final carouselActions = await _service.getCarouselActions(companyId);
 
+      if (!mounted) return;
       setState(() {
         _allProperties = response;
         _carouselImages = carouselFiles;
@@ -258,9 +261,10 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint('Error: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
