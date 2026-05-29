@@ -66,6 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isVisitorsLoading = true;
   String? _lastAgentId;
   String? _targetPropertyRef;
+  bool _initialized = false;
+
 
   List<Property> get _filteredProperties {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
@@ -114,8 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _targetPropertyRef = widget.initialPropertyRef;
     debugPrint('[HOME] initState - _targetPropertyRef: $_targetPropertyRef');
-    _loadProperties();
-    
+    // _loadProperties() is triggered by didChangeDependencies() which runs immediately after initState.
     // Capturar parámetros de referido de la URL (Estrategias 1 y 2)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appProv = Provider.of<AppProvider>(context, listen: false);
@@ -167,6 +168,24 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _targetPropertyRef = widget.initialPropertyRef;
       });
+      _loadProperties();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Detectar cambios en el agente activo usando el ciclo correcto (fuera de build)
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    final currentAgentId = appProvider.agentContext?.id;
+    if (!_initialized || _lastAgentId != currentAgentId) {
+      final oldAgentId = _lastAgentId;
+      _lastAgentId = currentAgentId;
+      _initialized = true;
+      // Solo limpiamos el ref si el agente fue cerrado manualmente (pasó de ID a null)
+      if (oldAgentId != null && currentAgentId == null) {
+        setState(() => _targetPropertyRef = null);
+      }
       _loadProperties();
     }
   }
@@ -841,16 +860,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final companyProv = context.watch<CompanyProvider>();
     debugPrint('[HOME] build - _targetPropertyRef: $_targetPropertyRef, widget.initialPropertyRef: ${widget.initialPropertyRef}');
 
-    // Si el contexto de agente cambia, recargamos propiedades para asegurar 
-    // que el carrusel y filtros estén sincronizados
-    if (_lastAgentId != appProvider.agentContext?.id) {
-      final oldAgentId = _lastAgentId;
-      _lastAgentId = appProvider.agentContext?.id;
-      // Solo limpiamos el ref si el banner del agente se cerró manualmente (pasó de tener ID a null)
-      // Evitamos limpiar si es la carga inicial o si ya estábamos en modo neutral.
-      if (oldAgentId != null && _lastAgentId == null) _targetPropertyRef = null;
-      Future.microtask(() => _loadProperties());
-    }
 
     final l10n = AppLocalizations(appProvider.locale);
     final isSpanish = appProvider.locale.languageCode == 'es';
