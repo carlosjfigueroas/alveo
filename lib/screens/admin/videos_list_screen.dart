@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -318,10 +319,32 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
   bool _initialized = false;
   String? _errorMessage;
   bool _isFullscreen = false;
+  bool _showControls = true;
+  Timer? _hideTimer;
 
   void _videoListener() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void _startHideTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _controller.value.isPlaying) {
+        setState(() {
+          _showControls = false;
+        });
+      }
+    });
+  }
+
+  void _onInteraction() {
+    if (mounted) {
+      setState(() {
+        _showControls = true;
+      });
+      _startHideTimer();
     }
   }
 
@@ -348,6 +371,7 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
               _initialized = true;
               _controller.play();
             });
+            _startHideTimer();
           }
         }).catchError((error) {
           if (mounted) {
@@ -361,6 +385,7 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
 
   @override
   void dispose() {
+    _hideTimer?.cancel();
     if (_initialized) {
       _controller.removeListener(_videoListener);
     }
@@ -385,148 +410,189 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
         constraints: _isFullscreen ? null : const BoxConstraints(maxWidth: 900),
         child: AspectRatio(
           aspectRatio: 16 / 9,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (_initialized)
-                Center(
-                  child: AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                )
-              else if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              else
-                const CircularProgressIndicator(color: Colors.white),
+          child: MouseRegion(
+            onHover: (_) => _onInteraction(),
+            child: GestureDetector(
+              onTap: _onInteraction,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (_initialized)
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller),
+                      ),
+                    )
+                  else if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  else
+                    const CircularProgressIndicator(color: Colors.white),
 
-              // Buffering indicator overlay
-              if (_initialized && _controller.value.isBuffering)
-                Container(
-                  color: Colors.black26,
-                  child: const Center(
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black54,
-                      radius: 30,
-                      child: CircularProgressIndicator(color: Colors.green),
+                  // Buffering indicator overlay (always interactive / visible over video)
+                  if (_initialized && _controller.value.isBuffering)
+                    Container(
+                      color: Colors.black26,
+                      child: const Center(
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black54,
+                          radius: 30,
+                          child: CircularProgressIndicator(color: Colors.green),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-              // Controls overlay
-              if (_initialized)
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (_controller.value.isPlaying) {
-                          _controller.pause();
-                        } else {
-                          _controller.play();
-                        }
-                      });
-                    },
-                    child: Container(
-                      color: Colors.transparent,
+                  // Animated Controls overlay
+                  AnimatedOpacity(
+                    opacity: _showControls ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: IgnorePointer(
+                      ignoring: !_showControls,
                       child: Stack(
                         children: [
-                          if (!_controller.value.isPlaying && !_controller.value.isBuffering)
-                            const Center(
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black54,
-                                radius: 30,
-                                child: Icon(Icons.play_arrow, size: 40, color: Colors.white),
-                              ),
-                            ),
-                          // Bottom bar with play progress and timers
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              color: Colors.black87,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Row(
+                          // Play/pause screen overlay toggle
+                          if (_initialized)
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (_controller.value.isPlaying) {
+                                      _controller.pause();
+                                      _hideTimer?.cancel();
+                                      _showControls = true;
+                                    } else {
+                                      _controller.play();
+                                      _startHideTimer();
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  child: Stack(
                                     children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                                          color: Colors.white,
+                                      if (!_controller.value.isPlaying && !_controller.value.isBuffering)
+                                        const Center(
+                                          child: CircleAvatar(
+                                            backgroundColor: Colors.black54,
+                                            radius: 30,
+                                            child: Icon(Icons.play_arrow, size: 40, color: Colors.white),
+                                          ),
                                         ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _controller.value.isPlaying ? _controller.pause() : _controller.play();
-                                          });
-                                        },
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '${_formatDuration(_controller.value.position)} / ${_formatDuration(_controller.value.duration)}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      IconButton(
-                                        icon: Icon(
-                                          _isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                                          color: Colors.white,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _isFullscreen = !_isFullscreen;
-                                          });
-                                        },
-                                      ),
                                     ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-                                    child: VideoProgressIndicator(
-                                      _controller,
-                                      allowScrubbing: true,
-                                      colors: const VideoProgressColors(
-                                        playedColor: Colors.green,
-                                        bufferedColor: Colors.white30,
-                                        backgroundColor: Colors.white12,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              ),
+                            ),
+
+                          // Close button top-right
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: CircleAvatar(
+                              backgroundColor: Colors.black54,
+                              child: IconButton(
+                                icon: const Icon(Icons.close, color: Colors.white),
+                                onPressed: () => Navigator.pop(context),
                               ),
                             ),
                           ),
+
+                          // Bottom bar with play progress and timers (soft transparent gradient)
+                          if (_initialized)
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black87,
+                                      Colors.black45,
+                                      Colors.transparent,
+                                    ],
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                  ),
+                                ),
+                                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (_controller.value.isPlaying) {
+                                                _controller.pause();
+                                                _hideTimer?.cancel();
+                                                _showControls = true;
+                                              } else {
+                                                _controller.play();
+                                                _startHideTimer();
+                                              }
+                                            });
+                                          },
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${_formatDuration(_controller.value.position)} / ${_formatDuration(_controller.value.duration)}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        IconButton(
+                                          icon: Icon(
+                                            _isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _isFullscreen = !_isFullscreen;
+                                              _onInteraction();
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                                      child: VideoProgressIndicator(
+                                        _controller,
+                                        allowScrubbing: true,
+                                        colors: const VideoProgressColors(
+                                          playedColor: Colors.green,
+                                          bufferedColor: Colors.white30,
+                                          backgroundColor: Colors.white12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
                   ),
-                ),
-
-              // Close button top-right
-              Positioned(
-                top: 12,
-                right: 12,
-                child: CircleAvatar(
-                  backgroundColor: Colors.black54,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
