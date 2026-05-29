@@ -9,8 +9,8 @@ Este canal está estructurado para que las inmobiliarias actuales inviten a cole
 
 *   **Mecanismo:** La agencia envía un enlace de invitación desde su panel de control a una agencia extérna. Cuando el destinatario utiliza este enlace para crear su cuenta, el sistema vincula automáticamente a ambas empresas.
 *   **Beneficios Comerciales:** La agencia que envió la invitación recibe incentivos directos y cuantificables en su cuenta, divididos en dos áreas:
-    1.  **Reducciones recurrentes (Económico):** Obtienen descuentos que se aplican automáticamente sobre el pago de su cuota mensual de suscripción a la plataforma.
-    2.  **Expansiones de límite (Operativo):** El sistema aumenta de forma automatizada la capacidad de almacenamiento y la cantidad máxima de inmuebles que la agencia anfitriona tiene permitido publicar o alojar en la nube.
+    1.  **Reducciones recurrentes (Económico):** Obtienen un descuento de **$1.00 USD mensual** por cada agencia invitada que mantenga una suscripción activa. Este descuento es acumulativo hasta un máximo del 25% del valor total de su plan base.
+    2.  **Expansiones de límite (Operativo):** El sistema aumenta de forma automatizada la capacidad de almacenamiento otorgando **+2 Inmuebles y +2 Fotos extra** sin límite acumulable por cada agencia referida.
 
 ---
 
