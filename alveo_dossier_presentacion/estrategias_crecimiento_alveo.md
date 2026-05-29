@@ -17,8 +17,8 @@ Este canal está estructurado para que las inmobiliarias actuales inviten a cole
 ## 2. Afiliados Comerciales (Ejecutivos Vendedores-soporte).
 Este canal es de uso exclusivo para el equipo de ventas de Alvéo.
 
-*   **Mecanismo:** A cada vendedor se le asigna un enlace personalizado con su nombre o código, ejemplo: `https://alveo.fyi/agent/nicolas`. Al compartir este enlace con prospectos, el sistema identifica de forma transparente la sesión del visitante. Si el prospecto completa su registro, su nueva empresa queda vinculada permanentemente al perfil del vendedor.
-*   **Beneficios Comerciales:** El sistema automatiza el proceso de comisiones. Se calcula un porcentaje preestablecido de cada pago de suscripción que realice la inmobiliaria, y esos fondos se liquidan periódicamente de forma directa a la cuenta del ejecutivo responsable de la venta.
+*   **Mecanismo:** A cada vendedor se le asigna un enlace personalizado con su alias único (ejemplo: `https://alveo.fyi/agent/nicolas`). Al compartir este enlace con prospectos, la plataforma incrusta el identificador del ejecutivo de manera transparente en la sesión del visitante. Cuando el prospecto completa su registro de agencia, su empresa queda "etiquetada" y vinculada de forma vitalicia al perfil del vendedor en la base de datos.
+*   **Beneficios Comerciales:** El sistema automatiza completamente la liquidación de comisiones. Por cada pago de suscripción mensual o anual que realice la agencia, el ejecutivo recibe de forma directa y recurrente un porcentaje sustancial del ingreso (parametrizado en un **40% de la facturación neta** de la cuenta). Estos fondos son calculados y transferidos periódicamente a la cuenta del afiliado sin requerir intervención manual, garantizando una fuente de ingresos continuos a largo plazo por cada agencia que mantenga activa en el sistema.
 
 ---
 
