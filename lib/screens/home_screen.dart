@@ -72,8 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final agentContext = appProvider.agentContext;
     
     final list = _allProperties.where((p) {
-      // 1. Si hay un contexto de agente activo, filtrar solo sus propiedades
-      if (agentContext != null) {
+      // 1. Si hay un contexto de agente activo, filtrar solo sus propiedades,
+      // a menos que se esté buscando una propiedad específica por referencia en la URL.
+      if (agentContext != null && _targetPropertyRef == null) {
         if (p.listingAgentId != agentContext.id) return false;
       }
 
@@ -155,6 +156,17 @@ class _HomeScreenState extends State<HomeScreen> {
         salespersonAlias: s['alias'],
         salespersonName: s['full_name'],
       );
+    }
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialPropertyRef != oldWidget.initialPropertyRef) {
+      setState(() {
+        _targetPropertyRef = widget.initialPropertyRef;
+      });
+      _loadProperties();
     }
   }
 

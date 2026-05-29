@@ -770,6 +770,16 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 2. **Afiliados Comerciales (Ejecutivos)**: Es el canal exclusivo para contratistas o vendedores corporativos de Alveo, quienes captan nuevas agencias compartiendo un enlace personal de comisiones sobre la facturación de las empresas vinculadas a su alias.
 3. **Auto-Registro Orgánico (`showOrganicAffiliate`)**: Es el banner promocional discreto al pie del catálogo de cara al público general. **Este flujo es 100% orgánico y autogestionado**; no asocia comisiones automáticas a la agencia anfitriona ni a vendedores, aunque el nuevo usuario puede seleccionar voluntariamente el origen en el formulario público `/register`. Desactivar este interruptor asegura que la web pública quede 100% libre de publicidad o marcas de Alveo.
 
+---
+
+### Regla #114: Prioridad de Visualización en Enlaces de Agente con Propiedad Específica (Agent Link Property Priority)
+**Contexto**: Cuando un visitante accede al portal de una agencia utilizando el enlace personal de un agente dependiente que apunta a un inmueble específico (ej: `/agent/alias/refXXX`), la expectativa principal es visualizar dicho inmueble de inmediato. Si el catálogo general aplica de forma estricta el filtro que restringe el inventario visible únicamente a las captaciones de ese agente, cualquier propiedad de un compañero de oficina (terceros) fallará en renderizarse, provocando pantallas vacías y afectando la conversión.
+**Regla**:
+1. **Bypass del Filtro de Portafolio**: Si la URL contiene una referencia directa a una propiedad (`_targetPropertyRef != null`), el sistema debe omitir obligatoriamente el filtro de exclusión por agente (`listingAgentId == agentContext.id`). Esto permite que la propiedad especificada cargue y se muestre con éxito al visitante.
+2. **Preservación de la Marca y Contacto**: Aunque la propiedad pertenezca originalmente a otro captador, la sesión de navegación del visitante debe mantener al agente del enlace (`agentContext`) como el gestor activo en pantalla (foto de perfil, WhatsApp y correo de contacto), garantizando que cualquier lead generado se enrute y asigne a su bandeja privada.
+3. **Reactivación del Portafolio Personal**: Si el usuario decide cerrar la visualización detallada del inmueble o presiona el botón para limpiar la búsqueda de la referencia, el sistema re-activará el filtro por defecto, volviendo a mostrar únicamente el inventario captado por el agente.
+
+
 
 
 
