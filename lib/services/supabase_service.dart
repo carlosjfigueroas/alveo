@@ -5,6 +5,7 @@ import '../models/property.dart';
 import '../models/site_content.dart';
 import '../models/owner.dart';
 import '../models/user_profile.dart';
+import '../models/instructional_video.dart';
 
 class SupabaseService {
   final SupabaseClient client = Supabase.instance.client;
@@ -918,5 +919,29 @@ class SupabaseService {
     
     // 5. Finalmente borrar la empresa
     await client.from('companies').delete().eq('id', id);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // VIDEOS TUTORIALES (INSTRUCTIONAL VIDEOS)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  Future<List<InstructionalVideo>> getInstructionalVideos() async {
+    final response = await client
+        .from('instructional_videos')
+        .select()
+        .order('order_index', ascending: true);
+    return (response as List).map((json) => InstructionalVideo.fromJson(json)).toList();
+  }
+
+  Future<void> createInstructionalVideo(Map<String, dynamic> data) async {
+    await client.from('instructional_videos').insert(data);
+  }
+
+  Future<void> updateInstructionalVideo(String id, Map<String, dynamic> data) async {
+    await client.from('instructional_videos').update(data).eq('id', id);
+  }
+
+  Future<void> deleteInstructionalVideo(String id) async {
+    await client.from('instructional_videos').delete().eq('id', id);
   }
 }

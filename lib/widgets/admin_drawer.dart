@@ -19,6 +19,7 @@ import '../screens/admin/admin_company_settings.dart';
 import '../screens/admin/admin_users_screen.dart';
 import '../screens/admin/invite_friend_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
+import '../screens/admin/videos_list_screen.dart';
 
 import '../providers/company_provider.dart';
 import '../screens/commissions_list_screen.dart';
@@ -135,6 +136,14 @@ class AdminDrawer extends StatelessWidget {
             onTap: () => Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const AdminCalendarScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.ondemand_video, color: Colors.red),
+            title: const Text('Videos Tutoriales.'),
+            onTap: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const VideosListScreen()),
             ),
           ),
           if (provider.isCompanyAdmin || provider.isSuperAdmin)
