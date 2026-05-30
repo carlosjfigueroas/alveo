@@ -119,6 +119,24 @@ const tools = [
         }
       },
       {
+        name: "comparar_propiedades",
+        description: "Obtiene los detalles completos de DOS propiedades especificas simultaneamente para poder compararlas (ej. para ayudar al cliente a decidir entre dos opciones).",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            refNumber1: {
+              type: "NUMBER",
+              description: "El primer numero de referencia unico de propiedad (ej. 1024)"
+            },
+            refNumber2: {
+              type: "NUMBER",
+              description: "El segundo numero de referencia unico de propiedad (ej. 1025)"
+            }
+          },
+          required: ["refNumber1", "refNumber2"]
+        }
+      },
+      {
         name: "registrar_solicitud_visita",
         description: "Registra una solicitud de visita o interés de un cliente para una propiedad específica en la base de datos (CRM). Debe llamarse cuando el cliente proporcione su nombre y teléfono para agendar una cita o expresar interés formal en una propiedad.",
         parameters: {
@@ -331,6 +349,25 @@ async function handleFunctionCall(functionCall: any, supabaseClient: any, compan
     const args = functionCall.args || {};
     if (!args.refNumber) return { error: "Falta refNumber" };
     return { link: `${baseUrl}${String(args.refNumber).padStart(3, '0')}` };
+  }
+
+  if (functionCall.name === 'comparar_propiedades') {
+    const args = functionCall.args || {};
+    if (!args.refNumber1 || !args.refNumber2) return { error: "Faltan refNumber1 o refNumber2" };
+    
+    const { data, error } = await supabaseClient.from('properties').select(`
+      *,
+      property_details (*)
+    `).eq('company_id', company_id).in('ref_number', [args.refNumber1, args.refNumber2]);
+
+    if (error) return { error: error.message };
+    if (!data || data.length === 0) return { message: "No se encontró ninguna de las propiedades para comparar." };
+    
+    // Inject public_link
+    return data.map((p: any) => ({
+      ...p,
+      public_link: `${baseUrl}${String(p.ref_number).padStart(3, '0')}`
+    }));
   }
 
   if (functionCall.name === 'registrar_solicitud_visita') {
@@ -1155,7 +1192,10 @@ MUY IMPORTANTE SOBRE GESTIÓN DE CITAS (CRUD):
 
 MUY IMPORTANTE SOBRE LOS LINKS Y FOTOS:
 Cuando el usuario te pida "ver fotos", "ver más detalles" o te pregunte por una propiedad, SIEMPRE debes incluir el link público de la propiedad en tu respuesta usando formato Markdown: [Ver fotos y detalles]({public_link}).
-Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo directamente.`;
+Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo directamente.
+
+COMPARATIVA DE PROPIEDADES:
+Cuando el cliente quiera decidir entre dos propiedades, usa la herramienta 'comparar_propiedades' enviando ambas referencias. En tu respuesta, presenta la comparación en una tabla Markdown evaluando de forma concisa el precio, el tamaño (m2 y habs/baños), pros y contras de cada una, e incluye siempre el link a cada propiedad. Dales tu recomendación profesional basada en lo que busca el cliente.`;
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
