@@ -1235,7 +1235,7 @@ Cuando el cliente quiera decidir entre dos propiedades, usa la herramienta 'comp
       systemInstruction: { parts: [{ text: systemPrompt }] },
       contents: contents,
       tools: tools,
-      generationConfig: { temperature: 0.7, maxOutputTokens: 800 }
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
     };
 
     let resGemini = await fetch(geminiUrl, {
@@ -1292,7 +1292,7 @@ Cuando el cliente quiera decidir entre dos propiedades, usa la herramienta 'comp
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents: contents,
         tools: tools,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 800 }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
       };
       
       resGemini = await fetch(geminiUrl, {
