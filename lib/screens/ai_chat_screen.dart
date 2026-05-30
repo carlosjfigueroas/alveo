@@ -558,6 +558,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
       l10n.get('ava_chip_houses_rent', [cityName]),
       l10n.get('ava_chip_apts_sale', [cityName]),
       l10n.get('ava_chip_apts_rent', [cityName]),
+      l10n.get('ava_chip_compare'),
     ];
 
     return Container(
