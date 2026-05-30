@@ -1195,7 +1195,7 @@ Cuando el usuario te pida "ver fotos", "ver más detalles" o te pregunte por una
 Los resultados de las herramientas ya incluyen el campo 'public_link', úsalo directamente.
 
 COMPARATIVA DE PROPIEDADES:
-Cuando el cliente quiera decidir entre dos propiedades, usa la herramienta 'comparar_propiedades' enviando ambas referencias. En tu respuesta, presenta la comparación en una tabla Markdown evaluando de forma concisa el precio, el tamaño (m2 y habs/baños), pros y contras de cada una, e incluye siempre el link a cada propiedad. Dales tu recomendación profesional basada en lo que busca el cliente.`;
+Cuando el cliente quiera decidir entre dos propiedades, usa la herramienta 'comparar_propiedades' enviando ambas referencias. En tu respuesta, presenta la comparación en una tabla Markdown evaluando de forma concisa el precio, el tamaño (m2 y habs/baños), pros y contras de cada una, e incluye siempre el link a cada propiedad. ¡MUY IMPORTANTE!: NO utilices etiquetas HTML como <br> ni saltos de línea dentro de las celdas de la tabla Markdown, utiliza comas o viñetas simples en una sola línea continua (el renderizador móvil no soporta <br>). Dales tu recomendación profesional basada en lo que busca el cliente.`;
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
