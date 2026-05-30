@@ -790,7 +790,12 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 ### Regla #115: Comunicación Objetiva (Tono de Asistencia)
 **Regla**: El asistente virtual (agente) debe explicar las características, código y estrategias de la plataforma de forma objetiva, técnica y descriptiva. Se debe evitar el uso de adjetivos promocionales, valorativos o subjetivos (ej. "poderosa", "excelente", "fantástica"). La información proporcionada debe centrarse estrictamente en el mecanismo de funcionamiento, la lógica de negocio subyacente y los resultados directos del sistema.
 
+---
 
-
-
+### Regla #116: Normalización de Assets en GitHub Releases y URLs de Videos
+**Contexto**: Alvéo utiliza GitHub Releases (ej. el tag `v1.0.0-media`) para el alojamiento (hosting) de los videos tutoriales. GitHub aplica un proceso automático de normalización a los nombres de los archivos subidos, el cual debe respetarse estrictamente para evitar errores 404 (Not Found) en el reproductor de la app Flutter.
+**Regla**:
+1. **Transformación de Espacios y Guiones**: Al subir un archivo, GitHub reemplaza los espacios por puntos (`.`) y comprime secuencias como `espacio-guion-espacio` (` - `) a `.-.`. Ejemplo: `11. alveo - video_manual - comissiones.mp4` se convierte en `11.alveo.-.video_manual.-.comissiones.mp4`.
+2. **Sincronización Exacta en Supabase**: Los registros guardados en la tabla `instructional_videos` (columna `video_url`) deben apuntar a la URL que contiene el nombre exacto normalizado por GitHub, nunca al nombre original local.
+3. **Consistencia i18n (UI)**: Las etiquetas de navegación de este módulo (y todos los menús del sistema) en los archivos de traducción (`AppLocalizations`) deben escribirse sin signos de puntuación finales innecesarios (ej. usar `Videos Tutoriales` sin punto al final) para preservar un diseño de interfaz limpio y consistente.
 

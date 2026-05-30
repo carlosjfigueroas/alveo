@@ -563,9 +563,13 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: chips.map((chipLabel) {
+      height: 60, // Fixed height for horizontal chips
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: chips.length,
+        itemBuilder: (context, index) {
+          final chipLabel = chips[index];
           final textColor = isDark ? Colors.white70 : primaryColor;
           final bgColor = isDark
               ? Colors.white.withValues(alpha: 0.1)
@@ -574,7 +578,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               ? Colors.white.withValues(alpha: 0.2)
               : primaryColor.withValues(alpha: 0.2);
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(right: 8),
             child: ActionChip(
               label: Text(chipLabel,
                   style: TextStyle(fontSize: 12, color: textColor)),
@@ -585,7 +589,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               onPressed: () => _sendMessage(chipLabel),
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }
