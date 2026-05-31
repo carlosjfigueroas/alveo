@@ -833,5 +833,14 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 1. **Retardo en Transición**: El inicio y montaje de la capa interactiva `FlutterMap` debe retrasarse un mínimo de **350ms** empleando un retardo asíncrono en `initState`.
 2. **Cargador Placeholder**: Durante este breve lapso, se debe renderizar un widget contenedor ligero de carga con un indicador circular animado mínimo, asegurando que la animación física de entrada del diálogo sea suave y estable a 60fps constantes antes de inicializar la renderización y consumo de recursos de la red geográfica.
 
+---
+
+### Regla #121: Dimensionamiento Máximo de Imágenes de Portada en Carrusel y Galería
+**Contexto**: Con el fin de optimizar el ancho de banda, acelerar el tiempo de renderizado de la SPA en navegadores móviles/web y garantizar una simetría visual perfecta sin desbordamientos de pantalla en el carrusel principal, las dimensiones máximas de las portadas deben estar acotadas.
+**Regla**:
+1. **Dimensiones Máximas**: Las imágenes principales de portada en el carrusel y galerías de inicio deben tener un tamaño de visualización óptimo de exactamente **1500 x 400 píxeles** (ancho x alto).
+2. **Pre-procesamiento en Servidor**: Al utilizar APIs de imágenes dinámicas (como Unsplash), se deben inyectar explícitamente los parámetros de ancho, alto y ajuste (`w=1500&h=400&fit=fill&bg=FFF`) en la URL almacenada en la base de datos. Esto fuerza al servidor de origen a realizar la compresión y relleno de fondo de forma nativa antes de la descarga, optimizando drásticamente el consumo de memoria física del cliente.
+
+
 
 
