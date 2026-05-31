@@ -839,7 +839,12 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 **Contexto**: Con el fin de optimizar el ancho de banda, acelerar el tiempo de renderizado de la SPA en navegadores móviles/web y garantizar una simetría visual perfecta sin desbordamientos de pantalla en el carrusel principal, las dimensiones máximas de las portadas deben estar acotadas.
 **Regla**:
 1. **Dimensiones Máximas**: Las imágenes principales de portada en el carrusel y galerías de inicio deben tener un tamaño de visualización óptimo de exactamente **1500 x 400 píxeles** (ancho x alto).
-2. **Pre-procesamiento en Servidor**: Al utilizar APIs de imágenes dinámicas (como Unsplash), se deben inyectar explícitamente los parámetros de ancho, alto y ajuste (`w=1500&h=400&fit=fill&bg=FFF`) en la URL almacenada en la base de datos. Esto fuerza al servidor de origen a realizar la compresión y relleno de fondo de forma nativa antes de la descarga, optimizando drásticamente el consumo de memoria física del cliente.
+2. **Pre-procesamiento en Servidor**: Al utilizar APIs de imágenes dinámicas (como Unsplash), se deben inyectar explícitamente los parámetros de ancho, alto y ajuste (`w=1500&h=400&fit=fill&bg=FFF`) en la URL almacenada en la base de datos para pruebas iniciales o configuraciones estáticas de relleno de fondo.
+3. **Adaptación Dinámica Cliente/Servidor**: Para respetar la directriz de no aplicar zoom ni recortes invasivos (`BoxFit.contain`) pero garantizando llenar el banner responsivo al 100%, el código del carrusel en `home_screen.dart` intercepta dinámicamente las URLs de Unsplash en tiempo de ejecución según el dispositivo:
+   * **En Móviles (isMobile = true)**: Reescribe y solicita un aspecto adaptado de **800 x 420** píxeles (~1.9:1) que calza con el banner vertical.
+   * **En Escritorio (isMobile = false)**: Reescribe y solicita el formato panorámico de **1500 x 375** píxeles (4:1) que calza con el banner panorámico.
+   * Esto elimina de forma definitiva la necesidad de subir múltiples archivos físicos para móviles y ordenadores por separado.
+
 
 
 
