@@ -22,11 +22,19 @@ class _PropertyMapDialogState extends State<PropertyMapDialog> {
   final MapController _mapController = MapController();
   LatLng? _userLocation;
   bool _selectedMarkerExpanded = false;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
     _fetchUserLocation();
+    
+    // Delay rendering the map to guarantee a butter-smooth dialog entry transition
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (mounted) {
+        setState(() => _isMapReady = true);
+      }
+    });
   }
 
   Future<void> _fetchUserLocation() async {
@@ -66,56 +74,78 @@ class _PropertyMapDialogState extends State<PropertyMapDialog> {
           child: Stack(
             children: [
               // ── The Map ────────────────────────────────────────────────
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: propertyCenter,
-                  initialZoom: 15,
-                  onTap: (_, __) {
-                    if (_selectedMarkerExpanded) {
-                      setState(() => _selectedMarkerExpanded = false);
-                    }
-                  },
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.alveo.app',
-                  ),
-                  // Property marker
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: propertyCenter,
-                        width: 44,
-                        height: 44,
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedMarkerExpanded = !_selectedMarkerExpanded),
-                          child: const Icon(Icons.location_pin, color: AppThemes.terracottaRed, size: 44),
-                        ),
-                      ),
-                      // User location (blue dot)
-                      if (_userLocation != null)
-                        Marker(
-                          point: _userLocation!,
-                          width: 20,
-                          height: 20,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                              boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.4), blurRadius: 8, spreadRadius: 2)],
-                            ),
+              if (!_isMapReady)
+                Container(
+                  color: bgColor,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: AppThemes.primaryGreen),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.locale.languageCode == 'es' ? 'Preparando mapa...' : 'Preparing map...',
+                          style: TextStyle(
+                            color: textColor.withValues(alpha: 0.7),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const RichAttributionWidget(
-                    attributions: [TextSourceAttribution('OpenStreetMap contributors')],
+                )
+              else
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: propertyCenter,
+                    initialZoom: 15,
+                    onTap: (_, __) {
+                      if (_selectedMarkerExpanded) {
+                        setState(() => _selectedMarkerExpanded = false);
+                      }
+                    },
                   ),
-                ],
-              ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.alveo.app',
+                    ),
+                    // Property marker
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: propertyCenter,
+                          width: 44,
+                          height: 44,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedMarkerExpanded = !_selectedMarkerExpanded),
+                            child: const Icon(Icons.location_pin, color: AppThemes.terracottaRed, size: 44),
+                          ),
+                        ),
+                        // User location (blue dot)
+                        if (_userLocation != null)
+                          Marker(
+                            point: _userLocation!,
+                            width: 20,
+                            height: 20,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.4), blurRadius: 8, spreadRadius: 2)],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const RichAttributionWidget(
+                      attributions: [TextSourceAttribution('OpenStreetMap contributors')],
+                    ),
+                  ],
+                ),
 
               // ── Property Mini Popup (on marker tap) ────────────────────
               if (_selectedMarkerExpanded)

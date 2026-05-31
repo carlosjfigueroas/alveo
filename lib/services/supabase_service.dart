@@ -944,4 +944,19 @@ class SupabaseService {
   Future<void> deleteInstructionalVideo(String id) async {
     await client.from('instructional_videos').delete().eq('id', id);
   }
+
+  Future<void> updateVideosOrder(List<Map<String, dynamic>> batchData) async {
+    await client.from('instructional_videos').upsert(batchData);
+  }
+
+  Future<String> uploadVideoCover(dynamic bytes, String mimeType) async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = 'video_covers/cover_$timestamp';
+    await client.storage.from('property-images').uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(contentType: mimeType, upsert: true),
+    );
+    return client.storage.from('property-images').getPublicUrl(path);
+  }
 }

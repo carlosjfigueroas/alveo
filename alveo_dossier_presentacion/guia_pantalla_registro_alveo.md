@@ -1,0 +1,72 @@
+# Manual de Registro: Detalle de Pantalla y Funcionamiento de `/register`.
+
+Este manual proporciona una descripción clara y detallada sobre el diseño de la pantalla de auto-registro en Alvéo y lo que sucede en el sistema durante el proceso de creación de una cuenta. Este documento está diseñado para ser comprendido fácilmente por ejecutivos de ventas, soporte y administradores de la plataforma.
+
+---
+
+## 1. Elementos Visibles en Pantalla (Formulario de Registro).
+La pantalla está organizada de forma sencilla y adaptada tanto para computadoras como para teléfonos celulares:.
+
+### A. Carga de Logos (Identidad de la Agencia).
+El sistema permite subir dos versiones del logo de la inmobiliaria para personalizar su marca blanca:.
+*   **Logo Principal (PC/Escritorio):** Se muestra en la versión de computadora del portal y en los reportes de las propiedades.
+*   **Logo Abreviado (Móvil):** Una versión pequeña del logo ideal para que se vea bien en pantallas de teléfonos celulares.
+*   **Funcionamiento:.** Al presionar el botón se abre la galería de fotos del dispositivo. La aplicación reduce automáticamente el peso de la imagen antes de subirla para que la página de la inmobiliaria cargue muy rápido.
+
+### B. Datos de la Empresa y Dirección Web (Subdominio).
+*   **Nombre de la Agencia:.** Campo de texto para escribir el nombre comercial de la inmobiliaria.
+*   **Dirección Web Deseada (Subdominio):** Campo de máximo 10 caracteres (solo letras minúsculas, números y guiones) que definirá el enlace de la inmobiliaria.
+*   **Boton de Búsqueda (Lupa):** Realiza una comprobación automática en el sistema para asegurar que ninguna otra inmobiliaria esté usando ese mismo nombre web.
+*   **Previsualización:.** Muestra en tiempo real cómo se verá la dirección de internet para los clientes (ejemplo:. `https://miagencia.alveo.fyi`).
+
+### C. Datos del Administrador.
+*   **Nombre del Contacto:.** Nombre completo del director o encargado de la inmobiliaria.
+*   **Correo Electrónico:.** Correo que se usará para iniciar sesión como administrador de la cuenta.
+*   **Contraseña:.** Clave de acceso de mínimo 6 caracteres con opción de mostrar u ocultar el texto.
+*   **Teléfono:.** Teléfono de contacto de la persona responsable.
+
+### D. Redes Sociales de la Inmobiliaria.
+*   **WhatsApp:.** Campo obligatorio de contacto directo para recibir consultas de clientes (ejemplo:. `+58 412 0000000`).
+*   **Instagram, Facebook y Telegram:.** Enlaces opcionales que aparecerán automáticamente en el catálogo de propiedades para que los clientes visiten sus redes.
+
+### E. Configuración del Plan e Idioma.
+*   **Idioma de la Pantalla:.** Permite cambiar los textos de toda la pantalla de registro entre Español e Inglés al instante.
+*   **Plan de Suscripción:.** Permite seleccionar entre pago **Mensual** o pago **Anual** (el plan anual incluye un descuento equivalente a un mes de regalo).
+*   **Fechas de Prueba Gratuita:.** Campos informativos que indican cuándo inicia y cuándo termina el periodo de prueba gratis de 7 días.
+
+### F. Ubicación y Preferencias Regionales.
+*   **Detección Automática de País:.** La plataforma detecta automáticamente el país desde donde se conecta el usuario para mostrarle el precio correcto. Por seguridad de tarifas, una vez detectado el país, el campo se muestra **bloqueado con un candado**.
+*   **Estado y Ciudad:.** Listas desplegables que se adaptan automáticamente según el país del usuario.
+*   **Moneda de Trabajo:.** Permite elegir la moneda (USD, EUR, VES, COP, MXN, PEN, CLP, BOB, etc.) en la que se publicarán las propiedades por defecto.
+*   **Unidad de Medida:.** Permite elegir entre Metros Cuadrados (`m²`) o Pies Cuadrados (`ft²`) para el tamaño de los inmuebles.
+
+### G. Colores de la Marca.
+*   **Colores Corporativos:.** Campos para introducir los colores de la inmobiliaria (ejemplo:. `#006837` para verde y `#A64F35` para terracota). Se muestra un círculo con el color real al instante. Incluye un enlace para ayudar al usuario a elegir su código de color preferido.
+
+### H. Origen del Cliente (Canal de Adquisición).
+Esta sección asegura que se registren correctamente los beneficios y comisiones:.
+*   **Orgánico:.** Para clientes que llegan por sí mismos a la web de Alvéo.
+*   **Vendedor (Recomendado):** Permite seleccionar al ejecutivo de ventas que ayudó al cliente. Si el cliente ingresa usando el enlace personalizado del vendedor, esta opción aparece **bloqueada automáticamente** con el nombre del ejecutivo para asegurar su comisión perpetua del 40%.
+*   **Agencia Referente:.** Para ingresar el correo de otra agencia aliada en Alvéo y activar el descuento acumulativo de $1.00 USD mensual.
+
+### I. Aceptación de Contrato.
+*   **Lectura del Contrato:.** Para poder registrarse, el usuario debe deslizar el texto del contrato de servicio hasta el final y marcar la casilla de aceptación. El botón de registro no se activará si no se realiza esta acción.
+
+---
+
+## 2. ¿Qué sucede al presionar el botón "Registrar"?.
+Al presionar el botón, la plataforma realiza los siguientes pasos en cuestión de segundos:.
+
+1.  **Validación de Datos:.** Verifica que el formulario esté completo, que el contrato esté aceptado y que el nombre de dirección web elegido esté disponible.
+2.  **Creación del Portal Privado:.** El sistema configura de forma automática el nuevo portal exclusivo para la inmobiliaria con sus colores, logos y preferencias.
+3.  **Viculación de Beneficios:.** Registra el origen del cliente en el sistema para activar la comisión perpetua del ejecutivo de ventas o aplicar el descuento mensual a la agencia referente, según corresponda.
+4.  **Envío de Correo de Bienvenida:.** Envía de forma automática un correo electrónico al administrador con sus datos de acceso, contraseña y el enlace directo a su nuevo portal.
+
+---
+
+## 3. Pantalla de Registro Exitoso y Primer Acceso.
+Una vez completado el registro, la pantalla cambia automáticamente para dar la bienvenida a la nueva agencia:.
+*   **Animación de Cohete:.** Un gráfico animado de un cohete espacial confirma que el portal se ha creado exitosamente.
+*   **Enlace de Acceso Destacado:.** Se muestra de forma muy clara la dirección web privada para administrar el portal (ejemplo:. `https://miagencia.alveo.fyi/?clear_cache=1`).
+*   **Boton "Ir al Portal":** Al presionarlo, abre directamente el nuevo sistema de la inmobiliaria en una pestaña nueva para comenzar a trabajar.
+*   **Confirmación de Correo:.** Indica al usuario que revise su bandeja de entrada donde ya tiene el mensaje de bienvenida con toda la información de su cuenta.

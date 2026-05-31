@@ -251,7 +251,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() {
         _allProperties = response;
-        _carouselImages = carouselFiles;
+        _carouselImages = carouselFiles.isNotEmpty
+            ? carouselFiles
+            : (carouselActions.isNotEmpty
+                ? List.generate(10, (i) => 'carrusel_img_${(i + 1).toString().padLeft(2, '0')}.jpg')
+                : []);
         _carouselActions = carouselActions;
         _likeCounts = counts;
         _viewCounts = viewCounts;
@@ -597,18 +601,12 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isMobile, {
     Key? key,
   }) {
-    // Check if it's a direct logo upload or a carousel image
-    final String storagePath;
-    if (imgName.contains('logo')) {
-      storagePath = 'logos/$imgName';
-    } else {
-      storagePath = 'carousel/${company.id}/$imgName';
-    }
-    final imageUrl = _service.getPublicUrl('property-images', storagePath);
+    // Sanitizar el nombre para obtener solo el archivo (evita problemas de rutas anidadas en list)
+    final cleanImgName = imgName.split('/').last;
 
     // Detectar el slot a partir del nombre del archivo (ej: carrusel_img_03.jpg → slot 3)
     int? slot;
-    final match = RegExp(r'carrusel_img_(\d+)').firstMatch(imgName);
+    final match = RegExp(r'carrusel_img_(\d+)').firstMatch(cleanImgName);
     if (match != null) slot = int.tryParse(match.group(1)!);
     final action = slot != null ? _carouselActions[slot] : null;
 
@@ -623,6 +621,20 @@ class _HomeScreenState extends State<HomeScreen> {
           linkedProperty = null;
         }
       }
+    }
+
+    // Usar la primera foto del inmueble vinculado si existe, de lo contrario fallback al Storage
+    final String imageUrl;
+    if (linkedProperty != null && linkedProperty.imageUrls.isNotEmpty) {
+      imageUrl = linkedProperty.imageUrls.first;
+    } else {
+      final String storagePath;
+      if (cleanImgName.contains('logo')) {
+        storagePath = 'logos/$cleanImgName';
+      } else {
+        storagePath = 'carousel/${company.id}/$cleanImgName';
+      }
+      imageUrl = _service.getPublicUrl('property-images', storagePath);
     }
 
     final isSpanish =

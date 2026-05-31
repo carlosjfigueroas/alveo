@@ -1,0 +1,71 @@
+El Equipo de Ventas:.. Los Agentes Dependientes de la Agencia.
+
+En la plataforma **alvéo**, los **Agentes Dependientes** son los vendedores inmobiliarios que forman parte de la oficina. Cada agente cuenta con una cuenta de acceso privada dentro de la plataforma que les permite gestionar su propia cartera de clientes, y coordinar sus citas de calendario.
+
+El sistema está diseñado para dar a los vendedores la máxima autonomía comercial, protegiendo al mismo tiempo la base de datos general de la inmobiliaria.
+
+-------------------------
+Al ingresar a la sección de **Equipo**, la interfaz expone la lista de integrantes de la oficina y el formulario de registro:..
+
+## 1. Pantalla de Visualización de Equipo (Listado General).
+
+Muestra una lista vertical con los miembros registrados en la oficina:.
+
+*   **Botones de Acción Rápidos (Extremo derecho):.**
+    *   *Editar (Icono de lápiz azul):.* Abre el formulario de la ficha del integrante para modificar sus datos.
+    *   *Restablecer Contraseña (Icono de llave con candado naranja):.* Permite la redefinición inmediata de la contraseña de acceso.
+*   **Botón Nuevo Agente:.** Ubicado en la esquina inferior derecha, de color azul con el texto **Nuevo Agente**, diseñado para desplegar el diálogo de creación de usuarios.
+
+## 2. Diálogo de Registro y Creación (Nuevo Agente).
+
+Al presionar el botón **+ Nuevo Agente,** se despliega una ventana emergente que contiene los siguientes campos y elementos interactivos:.
+
+*   **Cargar Foto:.
+*   **Nombre completo:.
+*   **Correo de Login:.** Dirección de correo electrónico requerida exclusivamente para el inicio de sesión del usuario en la plataforma.
+*   **Contraseña:.
+*   **Correo Público (Contacto):.** Dirección de correo de cara al cliente final, donde se recibirán las consultas generadas en el catálogo web público.
+*   **WhatsApp:.**
+*   **Enlace Personal (Alias):.** Campo de texto para ingresar el nombre de usuario o alias sin espacios que conformará la URL personal del agente. muy importante!!!
+*   **Biografía - Descripción:.
+
+--------------------------
+
+Su Propia Web de Marca Personal (El link del Agente).
+Al ser registrado por la administración de la oficina, el sistema genera automáticamente para cada agente una **página web personal y catálogo inmobiliario**. 
+
+Esta página funciona como una tarjeta de presentación digital interactiva de cara al público, la cual incluye:.
+fotografía del agente y su biografía, mostrando su perfil de manera destacada frente a los clientes.
+Botones de Contacto Directo:. que permiten a los visitantes iniciar un chat de WhatsApp, enviar un correo electrónico directamente al agente.
+
+La página web del agente, tambien puede exponer todo el catálogo de inmuebles activos de la inmobiliaria. Esto permite que el agente pueda promocionar todas las opciones de la empresa bajo su propio nombre, multiplicando sus oportunidades de cierre.
+
+Cuando un agente comparte su enlace web personal en sus redes sociales, campañas publicitarias o con su lista de contactos, El sistema identifica si el cliente ha ingresado a través de ese agente en específico. Cualquier solicitud de información, consulta o cita de calendario que se realice durante esa navegación, **se asignará de manera automática y exclusiva al buzón privado de ese agente**. No importa si la propiedad por la que se interesa el cliente fue captada originalmente por otro compañero o por la administración; el prospecto le pertenece al agente que compartió su enlace personal, incentivando la promoción proactiva del catálogo de la oficina.
+
+Los agentes solo tienen acceso a ver y gestionar a los clientes (leads) que les han sido asignados directamente o que entraron a través de su página personal. No pueden visualizar los prospectos de otros compañeros de la oficina. La Agenda del agente muestra sus propias citas de visitas y reuniones programadas. Todos los agentes pueden explorar los inmuebles cargados en la base de datos de la empresa para poder ofrecer la propiedad correcta a sus compradores. Los agentes solo poseen permisos para editar, modificar fotos o cambiar el estatus de las propiedades donde figuren explícitamente como el **Captador Principal**. Esto evita que se alteren o borren por error descripciones comerciales, precios o datos clave cargados por otros compañeros.
+
+El sistema de comisiones de alvéo facilita el cálculo del reparto de honorarios de cada negocio cerrado en la oficina de manera transparente. Cada agente posee un porcentaje de comisión asignado en su ficha de perfil. Este valor sirve como plantilla automática cada vez que el agente registra una nueva propiedad en la base de datos. Debido a que no todos los inmuebles se negocian bajo las mismas condiciones, el porcentaje de comisión puede ser ajustado de forma particular dentro del editor de cada inmueble. Esto permite aplicar acuerdos especiales para negocios específicos sin alterar la regla general del perfil del agente.
+
+Aunque los agentes dependientes operan en sus respectivas bandejas de manera privada, la administración de la oficina conserva el control estratégico del negocio. Cuando un cliente ingresa directamente al catálogo web general de la inmobiliaria (sin usar el link de un agente en específico), y solicita información de una propiedad, el prospecto se asigna automáticamente al **Agente Captador** establecido previamente en la ficha del inmueble. Si el inmueble no posee un captador asignado, la solicitud llega a la bandeja del Administrador. El Administrador puede evaluar el perfil del cliente y utilizar la función de **Asignar Agente** para delegar la atención del prospecto al vendedor más adecuado del equipo. Una vez delegado, el liid pasa inmediatamente a ser privado para el agente seleccionado.
+
+importante:.. El Correo de Acceso versus Correo de Contacto. Para proteger la integridad de las cuentas y la privacidad de los agentes, alvéo divide el uso de las direcciones de correo electrónico en dos propósitos separados:.. 
+1.  **Correo de Acceso (Privado):..** Es la credencial única que utiliza el agente para iniciar sesión de forma segura en la plataforma administrativa de alvéo. Esta dirección nunca se muestra al público general.
+2.  **Correo Público de Contacto:..** Es la dirección de correo visible expuesta en el catálogo web del agente. Se utiliza para que los clientes finales escriban y envíen sus solicitudes de información de las propiedades. Al separar ambas direcciones, se previene que las cuentas de acceso del personal queden vulnerables a correos no deseados (spam) o intentos de accesos no autorizados en internet.
+
+----
+en alvéo, un agente puede ser captador un inmueble y otro cerrar la operacion. cada uno tiene un porcentaje de comision. el mismo captador puede ser el cerrador. el enlace (el linnnk) del agente en sus publicaciones es el gancho, para ser el cerrador. al entrar a alvéo con su usuario, la web se adapta a su inmuebles, leads, agenda y dashboard.
+ 
+en alvéo, La distribución de porcentajes entre los roles de captador y cerrador se define al momento de registrar el inmueble. El sistema aplica un control matemático donde el porcentaje asignado al agente calcula y bloquea de forma complementaria el porcentaje de la agencia para asegurar que la suma de ambos equivalga al 100%.
+
+los agentes tiene una publicacion de un inmueble determinado, cuando un prospecto hace click en ese publicacion se re-dirige hacia alveo, abriendo en pantalla ese inmueble, con la web adaptada al agente gracias a la estructura del link. 
+------
+
+-------------------------------------------------
+El tratamiento de los agentes dependientes en las aplicaciones SaaS PMS tradicionales del mercado inmobiliario difiere del modelo de alvéo en aspectos técnicos y de flujo de datos bien definidos:..
+
+1. Mecanismo de Atribución de Prospectos (Leads).
+SaaS PMS Tradicional:.. La asignación de prospectos suele gestionarse mediante reglas centralizadas de distribución en el servidor (como asignación manual por parte del administrador de la oficina o asignación automática por turnos-zonas geográficas).
+alvéo:.. La atribución está basada en la navegación del cliente. El sistema detecta el identificador del agente en la ruta de acceso de la URL, almacena esa relación en la sesión del visitante y asigna cualquier prospecto generado durante esa sesión directamente a la cuenta del agente correspondiente en la base de datos.
+2. Estructura de la Interfaz Web y Catálogo.
+SaaS PMS Tradicional:.. La página web pública expone una estructura corporativa única. La información de contacto que se muestra a los visitantes pertenece de forma constante a la oficina principal o al captador específico de la ficha consultada.
+alvéo:.. La interfaz pública se adapta dinámicamente según la URL de entrada. Si un visitante accede a través del enlace de un agente, el sistema reemplaza la información general de contacto del portal por los datos individuales de dicho agente, manteniendo visible todo el inventario de propiedades de la empresa.

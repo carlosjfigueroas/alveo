@@ -799,3 +799,39 @@ Antes, el código insertaba todos los correos electrónicos (ej. `admin@agencia.
 2. **Sincronización Exacta en Supabase**: Los registros guardados en la tabla `instructional_videos` (columna `video_url`) deben apuntar a la URL que contiene el nombre exacto normalizado por GitHub, nunca al nombre original local.
 3. **Consistencia i18n (UI)**: Las etiquetas de navegación de este módulo (y todos los menús del sistema) en los archivos de traducción (`AppLocalizations`) deben escribirse sin signos de puntuación finales innecesarios (ej. usar `Videos Tutoriales` sin punto al final) para preservar un diseño de interfaz limpio y consistente.
 
+---
+
+### Regla #117: Visibilidad y Resiliencia del Carrusel Manual (Manual Carousel Behavior)
+**Contexto**: El carrusel de la página de inicio en su estrategia **Manual** está limitado a exactamente 10 slots controlados desde el panel administrativo. La renderización de este carrusel en producción depende de las imágenes que existan en el Storage de Supabase bajo el path `carousel/$companyId/`.
+**Regla**:
+1. **Ocultamiento por Ausencia de Contenido**: Si una empresa no ha subido ninguna imagen manual o el listado de Supabase retorna un arreglo vacío, la aplicación debe ocultar completamente el carrusel en la interfaz mediante un `SizedBox.shrink()`. Está **estrictamente prohibido** forzar la generación de slots vacíos o mostrar placeholders de error ("imagen no encontrada") de forma predeterminada cuando no hay imágenes cargadas en el Storage, garantizando que el diseño del portal sea limpio y profesional desde el inicio.
+2. **Acciones de Clic**: Cuando el usuario interactúa con un elemento activo del carrusel manual:
+   * **Enlace Externo**: Si el campo de acción inicia con `http://` o `https://`, se debe abrir mediante `launchUrl` en una pestaña externa.
+   * **Propiedad Vinculada**: Si es una referencia a un inmueble (ej: `032`), se debe verificar su existencia en el inventario activo de la empresa y abrir su diálogo de detalles (`PhotoGalleryDialog`) internamente.
+
+---
+
+### Regla #118: Responsividad del Botón "Me Interesa" en Galerías
+**Contexto**: El botón flotante "Me Interesa" en la ficha o galería del inmueble (`PhotoGalleryDialog`) debe adaptarse ergonómicamente tanto a dispositivos móviles como a ordenadores.
+**Regla**:
+1. **Alineación**: En dispositivos móviles (`isMobileMode`), el botón se posiciona de forma centrada para facilitar la accesibilidad del pulgar. En escritorio, se alinea al lado izquierdo, en perfecta armonía con el texto de la dirección.
+2. **Dimensiones de padding**: Se debe adaptar la densidad espacial reduciendo los paddings del botón y el tamaño de texto proporcionalmente en móviles para evitar solapamientos u ocultamiento de detalles cruciales del inmueble.
+
+---
+
+### Regla #119: Lanzamiento de Mapas desde el Indicador de Dirección
+**Contexto**: El texto de dirección y su respectivo pin en el diálogo de galería actúan como el punto de activación intuitivo para visualizar el mapa interactivo del inmueble.
+**Regla**:
+1. **Accionador de Fila**: Se debe envolver la fila que contiene el icono de ubicación y la dirección en un `GestureDetector` y `MouseRegion` que aplique `SystemMouseCursors.click` si la propiedad cuenta con coordenadas válidas de latitud/longitud.
+2. **Indicador de Interactividad**: Para sugerir de forma elegante que el elemento es clickeable sin sobrecargar la interfaz, el texto de la dirección debe mostrar un subrayado punteado (`TextDecoration.underline` con `TextDecorationStyle.dashed`) en color blanco translúcido (`Colors.white70`), el cual solo se activa si existen coordenadas geográficas válidas para lanzar el mapa.
+
+---
+
+### Regla #120: Lazy-Loading de Mapas para Transiciones de Diálogos (60fps)
+**Contexto**: Instanciar, procesar y descargar concurrentemente los tiles geográficos de `FlutterMap` mientras se ejecuta la animación física de escala y desvanecimiento al abrir un modal produce caídas de frames críticas en entornos web y móviles.
+**Regla**:
+1. **Retardo en Transición**: El inicio y montaje de la capa interactiva `FlutterMap` debe retrasarse un mínimo de **350ms** empleando un retardo asíncrono en `initState`.
+2. **Cargador Placeholder**: Durante este breve lapso, se debe renderizar un widget contenedor ligero de carga con un indicador circular animado mínimo, asegurando que la animación física de entrada del diálogo sea suave y estable a 60fps constantes antes de inicializar la renderización y consumo de recursos de la red geográfica.
+
+
+

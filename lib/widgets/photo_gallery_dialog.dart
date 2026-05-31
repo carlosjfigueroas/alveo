@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/property.dart';
 import '../services/app_themes.dart';
 import '../services/app_localizations.dart';
+import '../services/app_provider.dart';
+import '../screens/budget_screen.dart';
+import 'property_map_dialog.dart';
 
 class PhotoGalleryDialog extends StatefulWidget {
   final Property property;
@@ -17,7 +21,7 @@ class PhotoGalleryDialog extends StatefulWidget {
   State<PhotoGalleryDialog> createState() => _PhotoGalleryDialogState();
 }
 
-class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> {
+class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> with SingleTickerProviderStateMixin {
   late int _currentIndex;
   Offset? _mousePosition; // Global within the dialog's stack
   Offset? _imageRelativePos; // Position within the actual image pixels
@@ -26,10 +30,33 @@ class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> {
   final double _zoomFactor = 2.0;
   final GlobalKey _imageKey = GlobalKey();
 
+  late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _glowAnimation = Tween<double>(begin: 4.0, end: 16.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   void _nextImage() {
@@ -103,7 +130,7 @@ class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> {
 
     return Column(
       children: [
-        // Header with Huge Close Button
+        // Header with Huge Close Button and Reference Number
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
           color: Theme.of(context).colorScheme.surface,
@@ -111,10 +138,42 @@ class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  widget.property.title,
-                  style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.property.title,
+                        style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (widget.property.refNumber != null) ...[
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppThemes.primaryGreen,
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'Ref. ${(widget.property.refNumber ?? 0).toString().padLeft(3, '0')}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               GestureDetector(
@@ -240,56 +299,169 @@ class _PhotoGalleryDialogState extends State<PhotoGalleryDialog> {
                       ),
                     ],
 
-                    // Transparent Information Overlay (Floating Layer)
+                    // Transparent Information Overlay (Floating Layer with Clickable button)
                     Positioned(
-                      top: 30,
-                      left: 30,
-                      right: 30,
-                      child: IgnorePointer(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on, size: 24, color: AppThemes.primaryGreen),
-                                const SizedBox(width: 10),
-                                Flexible(
-                                  child: Text(
-                                    widget.property.address,
-                                    style: TextStyle(
-                                      color: Colors.white, 
-                                      fontSize: isMobileMode ? 18 : 26, 
-                                      fontWeight: FontWeight.bold, 
-                                      letterSpacing: 0.5,
-                                      shadows: [
-                                        Shadow(color: Colors.black.withValues(alpha: 0.9), blurRadius: 10, offset: const Offset(2, 2)),
-                                      ],
+                      top: isMobileMode ? 16 : 30,
+                      left: isMobileMode ? 16 : 30,
+                      right: isMobileMode ? 16 : 30,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: (widget.property.latitude != null && widget.property.longitude != null)
+                                ? () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => PropertyMapDialog(property: widget.property),
+                                    );
+                                  }
+                                : null,
+                            child: MouseRegion(
+                              cursor: (widget.property.latitude != null && widget.property.longitude != null)
+                                  ? SystemMouseCursors.click
+                                  : SystemMouseCursors.basic,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.location_on, size: isMobileMode ? 18 : 24, color: AppThemes.primaryGreen),
+                                  SizedBox(width: isMobileMode ? 6 : 10),
+                                  Flexible(
+                                    child: Text(
+                                      widget.property.address,
+                                      style: TextStyle(
+                                        color: Colors.white, 
+                                        fontSize: isMobileMode ? 16 : 26, 
+                                        fontWeight: FontWeight.bold, 
+                                        letterSpacing: 0.5,
+                                        decoration: (widget.property.latitude != null && widget.property.longitude != null)
+                                            ? TextDecoration.underline
+                                            : null,
+                                        decorationColor: Colors.white70,
+                                        decorationStyle: TextDecorationStyle.dashed,
+                                        shadows: [
+                                          Shadow(color: Colors.black.withValues(alpha: 0.9), blurRadius: 10, offset: const Offset(2, 2)),
+                                        ],
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            if (widget.property.locationLabel.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 34, top: 6),
-                                child: Text(
-                                  widget.property.locationLabel,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.95), 
-                                    fontSize: isMobileMode ? 14 : 20, 
-                                    fontStyle: FontStyle.italic,
-                                    letterSpacing: 0.5,
-                                    shadows: [
-                                      Shadow(color: Colors.black.withValues(alpha: 0.9), blurRadius: 8, offset: const Offset(1, 1)),
-                                    ],
-                                  ),
+                          ),
+                          if (widget.property.locationLabel.isNotEmpty)
+                            Padding(
+                              padding: EdgeInsets.only(left: isMobileMode ? 24 : 34, top: 4),
+                              child: Text(
+                                widget.property.locationLabel,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.95), 
+                                  fontSize: isMobileMode ? 12 : 20, 
+                                  fontStyle: FontStyle.italic,
+                                  letterSpacing: 0.5,
+                                  shadows: [
+                                    Shadow(color: Colors.black.withValues(alpha: 0.9), blurRadius: 8, offset: const Offset(1, 1)),
+                                  ],
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                          SizedBox(height: isMobileMode ? 8 : 16),
+                          // Me Interesa Button (Centrado en móviles, alineado a la izquierda en escritorio)
+                          AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, child) {
+                              final isUnavailable = widget.property.status == 'Vendido' || widget.property.status == 'Alquilado';
+                              if (isUnavailable) {
+                                return Align(
+                                  alignment: isMobileMode ? Alignment.center : Alignment.centerLeft,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white24,
+                                      foregroundColor: Colors.white,
+                                      padding: isMobileMode 
+                                        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+                                        : const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onPressed: null,
+                                    child: Text(
+                                      AppLocalizations.of(context).locale.languageCode == 'es' ? 'No Disponible' : 'Not Available',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Align(
+                                alignment: isMobileMode ? Alignment.center : Alignment.centerLeft,
+                                child: Transform.scale(
+                                  scale: _scaleAnimation.value,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppThemes.terracottaRed,
+                                          Color(0xFFE27C67),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppThemes.terracottaRed.withValues(alpha: 0.6),
+                                          blurRadius: _glowAnimation.value,
+                                          spreadRadius: _glowAnimation.value / 4,
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        foregroundColor: Colors.white,
+                                        padding: isMobileMode 
+                                          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
+                                          : const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => Dialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                            clipBehavior: Clip.antiAlias,
+                                            child: ConstrainedBox(
+                                              constraints: const BoxConstraints(maxWidth: 600, maxHeight: 800),
+                                              child: BudgetScreen(selectedPropertyId: widget.property.id),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.favorite, color: Colors.white, size: 18),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            l10n.get('me_interesa'),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w800, 
+                                              fontSize: 15,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        ],
                       ),
                     ),
 

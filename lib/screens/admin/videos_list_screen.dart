@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/app_provider.dart';
 import '../../services/app_localizations.dart';
 import '../../services/supabase_service.dart';
@@ -44,6 +46,35 @@ class _VideosListScreenState extends State<VideosListScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _onReorder(int oldIndex, int newIndex) async {
+    setState(() {
+      final item = _videos.removeAt(oldIndex);
+      _videos.insert(newIndex, item);
+    });
+
+    try {
+      final batchData = _videos.asMap().entries.map((e) => {
+        'id': e.value.id,
+        'title': e.value.title,
+        'description': e.value.description,
+        'video_url': e.value.videoUrl,
+        'cover_url': e.value.coverUrl,
+        'order_index': e.key + 1,
+        'created_at': e.value.createdAt.toIso8601String(),
+      }).toList();
+      
+      await SupabaseService().updateVideosOrder(batchData);
+      _loadVideos();
+    } catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.get('save_error')} $e')),
+        );
+      }
     }
   }
 
@@ -151,8 +182,9 @@ class _VideosListScreenState extends State<VideosListScreen> {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1000),
-                      child: GridView.builder(
+                      child: ReorderableGridView.builder(
                         itemCount: _videos.length,
+                        onReorder: isSuperAdmin ? _onReorder : (o, n) {},
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 450,
                           mainAxisSpacing: 16,
@@ -162,6 +194,7 @@ class _VideosListScreenState extends State<VideosListScreen> {
                         itemBuilder: (context, index) {
                           final video = _videos[index];
                           return Card(
+                            key: ValueKey(video.id),
                             elevation: 4,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -174,17 +207,27 @@ class _VideosListScreenState extends State<VideosListScreen> {
                                 Expanded(
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: isDark
-                                            ? [Colors.blueGrey[900]!, Colors.blueGrey[800]!]
-                                            : [Colors.grey[200]!, Colors.grey[350]!],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
+                                      image: video.coverUrl != null && video.coverUrl!.isNotEmpty
+                                          ? DecorationImage(
+                                              image: NetworkImage(video.coverUrl!),
+                                              fit: BoxFit.contain,
+                                            )
+                                          : null,
+                                      gradient: video.coverUrl == null || video.coverUrl!.isEmpty
+                                          ? LinearGradient(
+                                              colors: isDark
+                                                  ? [Colors.blueGrey[900]!, Colors.blueGrey[800]!]
+                                                  : [Colors.grey[200]!, Colors.grey[350]!],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            )
+                                          : null,
                                     ),
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
+                                        if (video.coverUrl != null && video.coverUrl!.isNotEmpty)
+                                          Container(color: Colors.black45),
                                         Icon(
                                           Icons.video_collection,
                                           size: 64,
@@ -572,13 +615,16 @@ class _VideoPlayerDialogState extends State<_VideoPlayerDialog> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-                                      child: VideoProgressIndicator(
-                                        _controller,
-                                        allowScrubbing: true,
-                                        colors: const VideoProgressColors(
-                                          playedColor: Colors.green,
-                                          bufferedColor: Colors.white30,
-                                          backgroundColor: Colors.white12,
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: VideoProgressIndicator(
+                                          _controller,
+                                          allowScrubbing: true,
+                                          colors: const VideoProgressColors(
+                                            playedColor: Colors.green,
+                                            bufferedColor: Colors.white30,
+                                            backgroundColor: Colors.white12,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -619,6 +665,7 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _urlCtrl = TextEditingController();
+  final _coverCtrl = TextEditingController();
   final _orderCtrl = TextEditingController(text: '0');
   bool _isSaving = false;
 
@@ -629,6 +676,7 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
       _titleCtrl.text = widget.video!.title;
       _descCtrl.text = widget.video!.description ?? '';
       _urlCtrl.text = widget.video!.videoUrl;
+      _coverCtrl.text = widget.video!.coverUrl ?? '';
       _orderCtrl.text = widget.video!.orderIndex.toString();
     }
   }
@@ -638,6 +686,7 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
     _titleCtrl.dispose();
     _descCtrl.dispose();
     _urlCtrl.dispose();
+    _coverCtrl.dispose();
     _orderCtrl.dispose();
     super.dispose();
   }
@@ -652,6 +701,7 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
       'title': _titleCtrl.text.trim(),
       'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       'video_url': _urlCtrl.text.trim(),
+      'cover_url': _coverCtrl.text.trim().isEmpty ? null : _coverCtrl.text.trim(),
       'order_index': int.tryParse(_orderCtrl.text) ?? 0,
     };
 
@@ -676,6 +726,38 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  bool _isUploadingCover = false;
+
+  Future<void> _pickAndUploadCover() async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: ImageSource.gallery);
+    if (file == null) return;
+
+    setState(() => _isUploadingCover = true);
+    try {
+      final bytes = await file.readAsBytes();
+      final mimeType = file.mimeType ?? 'image/jpeg';
+      final url = await SupabaseService().uploadVideoCover(bytes, mimeType);
+      
+      setState(() {
+        _coverCtrl.text = url;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Portada subida exitosamente'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error subiendo portada: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingCover = false);
     }
   }
 
@@ -714,6 +796,43 @@ class _VideoEditorDialogState extends State<_VideoEditorDialog> {
                   if (!v.startsWith('http')) return l10n.get('invalid_url');
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _coverCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'URL de la portada (Opcional)',
+                        hintText: 'https://ejemplo.com/portada.jpg',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppThemes.primaryGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _isUploadingCover
+                        ? const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.upload_file),
+                            color: AppThemes.primaryGreen,
+                            tooltip: 'Subir imagen desde PC',
+                            onPressed: _pickAndUploadCover,
+                          ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               TextFormField(
