@@ -661,7 +661,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // 1. La imagen manual de fondo
         Image.network(
           finalImageUrl.contains('?') ? '$finalImageUrl&t=$_cacheBuster' : '$finalImageUrl?t=$_cacheBuster',
-          fit: BoxFit.contain, // Mantenemos contain para evitar cualquier tipo de zoom o recorte en la imagen
+          fit: BoxFit.cover, // Usamos cover para asegurar que el banner siempre se llene de borde a borde sin barras grises
           width: double.infinity,
           height: double.infinity,
           errorBuilder: (_, __, ___) => Container(
