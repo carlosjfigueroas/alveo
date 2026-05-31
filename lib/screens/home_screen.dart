@@ -637,6 +637,20 @@ class _HomeScreenState extends State<HomeScreen> {
       imageUrl = _service.getPublicUrl('property-images', storagePath);
     }
 
+    // Ajustar dinámicamente el tamaño y relación de aspecto para Unsplash (móvil vs desktop)
+    String finalImageUrl = imageUrl;
+    if (finalImageUrl.contains('images.unsplash.com')) {
+      // Remover parámetros existentes de ancho/alto/ajuste para inyectar los óptimos
+      finalImageUrl = finalImageUrl.replaceAll(RegExp(r'[?&](w|h|fit|bg)=[^&]*'), '');
+      if (isMobile) {
+        // En móviles (banner de 200px de alto): Proporción ~1.9:1 (800x420)
+        finalImageUrl += (finalImageUrl.contains('?') ? '&' : '?') + 'auto=format&fit=crop&w=800&h=420&q=80';
+      } else {
+        // En desktop (banner de 350px de alto): Proporción panorámica 4:1 (1500x375)
+        finalImageUrl += (finalImageUrl.contains('?') ? '&' : '?') + 'auto=format&fit=crop&w=1500&h=375&q=80';
+      }
+    }
+
     final isSpanish =
         Provider.of<AppProvider>(context, listen: false).locale.languageCode ==
         'es';
@@ -646,8 +660,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         // 1. La imagen manual de fondo
         Image.network(
-          '$imageUrl?t=$_cacheBuster',
-          fit: BoxFit.contain, // Revertido a contain para evitar el efecto zoom
+          finalImageUrl.contains('?') ? '$finalImageUrl&t=$_cacheBuster' : '$finalImageUrl?t=$_cacheBuster',
+          fit: BoxFit.contain, // Mantenemos contain para evitar cualquier tipo de zoom o recorte en la imagen
           width: double.infinity,
           height: double.infinity,
           errorBuilder: (_, __, ___) => Container(
